@@ -1,13 +1,9 @@
 import React, { useState } from 'react';
-import { Plus, Trash2, Store, ShoppingBag, Camera, Percent, Sparkles, CheckCircle2, Loader2, X } from 'lucide-react';
+import { Plus, Trash2, Store, ShoppingBag, Percent } from 'lucide-react';
 
 export default function CreateBillSection({
   restaurantName,
   setRestaurantName,
-  receiptPhotoData,
-  setReceiptPhotoData,
-  receiptFileName,
-  setReceiptFileName,
   foodItems,
   setFoodItems,
   taxPercent,
@@ -16,68 +12,12 @@ export default function CreateBillSection({
   setServiceCharge,
   discount,
   setDiscount,
-  totals,
-  setParticipants
+  totals
 }) {
   const [newItemName, setNewItemName] = useState('');
   const [newItemPrice, setNewItemPrice] = useState('');
   const [newItemQty, setNewItemQty] = useState(1);
   const [errorMsg, setErrorMsg] = useState('');
-  const [isScanning, setIsScanning] = useState(false);
-  const [scanSuccessMsg, setScanSuccessMsg] = useState('');
-
-  const handleReceiptUpload = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const dataUrl = event.target.result;
-      setReceiptPhotoData(dataUrl);
-      setReceiptFileName(file.name);
-      runOcrScan(dataUrl, file.name);
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const runOcrScan = (imageData, fileName) => {
-    setIsScanning(true);
-    setScanSuccessMsg('');
-
-    // Simulate OCR text extraction with smart parser
-    setTimeout(() => {
-      const detectedRestaurant = "Spice Haven Restaurant";
-      const detectedItems = [
-        { id: 'item_' + Date.now() + '_1', name: 'Chicken Biryani', price: 320, quantity: 2 },
-        { id: 'item_' + Date.now() + '_2', name: 'Paneer Butter Masala', price: 260, quantity: 1 },
-        { id: 'item_' + Date.now() + '_3', name: 'Butter Garlic Naan', price: 60, quantity: 4 },
-        { id: 'item_' + Date.now() + '_4', name: 'Fresh Lime Soda', price: 70, quantity: 3 }
-      ];
-
-      setRestaurantName(detectedRestaurant);
-      setFoodItems(detectedItems);
-      setTaxPercent('5.0');
-      setServiceCharge('50');
-      setDiscount('0');
-
-      if (setParticipants) {
-        setParticipants([
-          { id: 'p_1', name: 'Rahul' },
-          { id: 'p_2', name: 'Sneha' },
-          { id: 'p_3', name: 'Amal' }
-        ]);
-      }
-
-      setIsScanning(false);
-      setScanSuccessMsg(`Extracted ${detectedItems.length} dishes, prices, and 5% GST automatically from ${fileName}!`);
-    }, 1200);
-  };
-
-  const handleRemoveReceipt = () => {
-    setReceiptPhotoData(null);
-    setReceiptFileName('');
-    setScanSuccessMsg('');
-  };
 
   const handleAddItem = (e) => {
     e.preventDefault();
@@ -126,56 +66,6 @@ export default function CreateBillSection({
 
   return (
     <div className="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 shadow-sm mb-8">
-      {/* OCR Scanner Banner */}
-      <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-emerald-50 to-teal-50 border border-brand/30 flex flex-col sm:flex-row items-center justify-between gap-3">
-        <div className="flex items-center space-x-3 text-navy-900">
-          <div className="w-10 h-10 rounded-xl bg-brand text-white flex items-center justify-center font-bold text-lg shadow-sm">
-            <Camera className="w-5 h-5" />
-          </div>
-          <div>
-            <div className="text-xs font-bold uppercase tracking-wider text-brand-hover">AI Bill Image Scanner (OCR)</div>
-            <div className="text-xs text-slate-600">Upload receipt image to automatically detect dishes, prices & GST</div>
-          </div>
-        </div>
-
-        <label className="cursor-pointer bg-brand hover:bg-brand-hover text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-sm transition shrink-0 flex items-center space-x-2">
-          <Sparkles className="w-3.5 h-3.5" />
-          <span>Upload & Auto-Scan Bill</span>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleReceiptUpload}
-            className="hidden"
-          />
-        </label>
-      </div>
-
-      {/* Scanning Indicator */}
-      {isScanning && (
-        <div className="mb-6 p-4 rounded-xl bg-slate-50 border border-slate-200 text-center animate-pulse">
-          <div className="animate-spin w-6 h-6 border-3 border-brand border-t-transparent rounded-full mx-auto mb-2"></div>
-          <div className="text-xs font-bold text-navy-900">Scanning bill photo with AI OCR...</div>
-          <div className="text-[11px] text-slate-400">Extracting restaurant name, items, prices, and GST</div>
-        </div>
-      )}
-
-      {/* Scanned Success Message */}
-      {scanSuccessMsg && (
-        <div className="mb-6 p-3 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-between text-xs text-emerald-900">
-          <div className="flex items-center space-x-2">
-            <CheckCircle2 className="w-4 h-4 text-brand shrink-0" />
-            <span className="font-semibold">{scanSuccessMsg}</span>
-          </div>
-          <button
-            type="button"
-            onClick={handleRemoveReceipt}
-            className="text-slate-400 hover:text-rose-500 font-bold ml-2"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-      )}
-
       {/* Restaurant Name */}
       <div className="mb-6">
         <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">
@@ -257,7 +147,7 @@ export default function CreateBillSection({
       {foodItems.length === 0 ? (
         <div className="text-center py-6 border-2 border-dashed border-slate-200 rounded-xl mb-6">
           <p className="text-sm font-medium text-slate-500">No dishes listed yet.</p>
-          <p className="text-xs text-slate-400 mt-1">Upload a bill photo above or add dishes manually.</p>
+          <p className="text-xs text-slate-400 mt-1">Add dishes manually using the form above.</p>
         </div>
       ) : (
         <div className="overflow-x-auto rounded-xl border border-slate-200 mb-6">

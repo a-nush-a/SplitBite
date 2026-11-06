@@ -3,17 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SplitBite – Smart Restaurant Bill Splitter (Accurate OCR with Review)</title>
+  <title>SplitBite – Smart Restaurant Bill Splitter & Debt Settlement Platform</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- jsPDF & AutoTable for instant PDF downloads -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
-  <!-- Tesseract.js for In-Browser OCR -->
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
   <!-- Plus Jakarta Sans Font -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.gstatic.com">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script>
     tailwind.config = {
@@ -34,9 +31,25 @@
 </head>
 <body class="min-h-screen flex flex-col">
 
+  <!-- Top Status Banner -->
+  <div class="bg-navy-900 text-slate-300 text-[11px] py-1.5 px-4 border-b border-slate-800">
+    <div class="max-w-5xl mx-auto flex flex-wrap items-center justify-between gap-2">
+      <div class="flex items-center space-x-2">
+        <span class="inline-block w-2 h-2 rounded-full bg-emerald-400"></span>
+        <span class="font-semibold text-white">SplitBite:</span>
+        <span class="text-slate-400">Manual Dining Split &bull; Proportional CGST/SGST &bull; Debt Settlement Ledger</span>
+      </div>
+      <div class="flex items-center space-x-3">
+        <div id="currentUserBadge" class="flex items-center space-x-1.5 text-slate-300">
+          <span>Guest Mode</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Navigation Bar -->
-  <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm">
-    <div class="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
+  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm">
+    <div class="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
       <div class="flex items-center space-x-3">
         <div class="w-10 h-10 rounded-xl bg-brand text-white flex items-center justify-center font-bold text-xl shadow-md shadow-brand/20">
           🍽️
@@ -44,326 +57,387 @@
         <div>
           <div class="flex items-center space-x-2">
             <span class="text-xl font-bold text-navy-900 tracking-tight">SplitBite</span>
-            <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-brand-light text-brand-hover">Smart OCR v1.4</span>
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-brand-light text-brand-hover uppercase tracking-wider">Smart Splitter</span>
           </div>
-          <p class="text-xs text-slate-500 hidden sm:block">Accurate Indian Receipt Scanner &bull; CGST + SGST</p>
+          <p class="text-xs text-slate-500 hidden sm:block">Itemized Dining Split &bull; Settle Up Ledger &bull; CGST/SGST</p>
         </div>
       </div>
-      <button onclick="resetAll()" class="text-xs font-semibold text-slate-600 hover:text-navy-900 bg-slate-100 hover:bg-slate-200 px-3 py-2 rounded-lg transition">
-        🔄 New Bill
-      </button>
+
+      <!-- Navigation Tabs & User Profile -->
+      <div class="flex items-center space-x-2">
+        <button onclick="switchTab('newBill')" id="tabBtnNewBill" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-navy-900 text-white transition">
+          ➕ New Bill
+        </button>
+        <button onclick="switchTab('settlements')" id="tabBtnSettlements" class="px-3 py-1.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition flex items-center space-x-1">
+          <span>💳 Settle Up</span>
+          <span id="settlementBadge" class="hidden px-1.5 py-0.2 text-[10px] bg-brand text-white rounded-full">0</span>
+        </button>
+        <div id="authNavContainer">
+          <button onclick="openAuthModal()" id="authActionBtn" class="ml-2 text-xs font-semibold bg-emerald-50 text-brand border border-emerald-200 hover:bg-emerald-100 px-3 py-1.5 rounded-xl transition">
+            🔑 Sign In / Sign Up
+          </button>
+        </div>
+      </div>
     </div>
   </header>
 
   <!-- Hero Section -->
-  <section class="pt-8 pb-10 border-b border-slate-200 bg-gradient-to-b from-white to-offwhite text-center px-4">
+  <section class="pt-7 pb-8 border-b border-slate-200 bg-gradient-to-b from-white to-offwhite text-center px-4">
     <div class="max-w-3xl mx-auto">
-      <div class="inline-block px-3 py-1 rounded-full bg-brand-light text-brand-hover text-xs font-semibold mb-3">
-        🔍 Accurate Bill Scanner with Anti-Junk Filtering & Item Review
+      <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-brand-light text-brand-hover text-xs font-semibold mb-3">
+        <span>✓ 100% Fair & Accurate Dining Expense Splitter &bull; CGST/SGST Included</span>
       </div>
-      <h1 class="text-3xl sm:text-5xl font-extrabold text-navy-900 tracking-tight mb-3">
-        Accurate Receipt Scanner with <span class="text-brand">Live Review & CGST/SGST</span>
+      <h1 class="text-3xl sm:text-4xl font-extrabold text-navy-900 tracking-tight mb-2">
+        Split Restaurant Bills Without the <span class="text-brand">Math Headache</span>
       </h1>
-      <p class="text-slate-600 text-sm sm:text-base max-w-xl mx-auto mb-6">
-        Scans only real dishes and rates (filters out phone numbers, dates, tokens, and junk), letting you review and confirm items in 1 click!
+      <p class="text-slate-600 text-xs sm:text-sm max-w-xl mx-auto mb-4">
+        Enter your dishes manually, assign who ate what, accurately divide taxes, and easily track who owes whom with clean settlement records.
       </p>
 
       <div class="flex flex-wrap items-center justify-center gap-3">
-        <label for="receiptFileInput" class="cursor-pointer inline-flex items-center space-x-2 bg-brand hover:bg-brand-hover text-white text-xs font-bold px-5 py-3 rounded-xl shadow-md transition transform active:scale-95">
-          <span>📷 Upload Your Real Receipt Image</span>
-        </label>
-        <button onclick="loadSampleIndianReceipt()" class="inline-flex items-center space-x-2 bg-navy-900 hover:bg-slate-800 text-white text-xs font-bold px-5 py-3 rounded-xl shadow-md transition">
-          <span>⚡ Try with Sample Kerala Bill</span>
+        <a href="#step-1" class="inline-flex items-center space-x-1.5 bg-brand hover:bg-brand-hover text-white text-xs font-bold px-5 py-2.5 rounded-xl shadow-md transition transform active:scale-95">
+          <span>📝 Enter Restaurant & Dishes</span>
+        </a>
+        <button onclick="resetAll()" class="inline-flex items-center space-x-1.5 bg-white border border-slate-300 hover:border-slate-400 text-slate-700 text-xs font-bold px-4 py-2.5 rounded-xl shadow-sm transition">
+          <span>🔄 Reset Form</span>
         </button>
       </div>
     </div>
   </section>
 
-  <!-- Main Content -->
-  <main class="flex-1 max-w-4xl w-full mx-auto px-4 py-8">
+  <!-- Main Content Container -->
+  <main class="flex-1 max-w-5xl w-full mx-auto px-4 py-6">
 
-    <!-- Section 1: AI Receipt Scanner & Review Box -->
-    <div class="bg-white rounded-2xl p-6 border-2 border-brand/30 shadow-md mb-8 relative overflow-hidden">
-      <div class="flex items-center space-x-3 mb-5 pb-4 border-b border-slate-100">
-        <div class="w-10 h-10 rounded-xl bg-emerald-50 text-brand flex items-center justify-center font-bold text-lg">
-          📷
-        </div>
-        <div>
-          <h2 class="text-lg font-bold text-navy-900">Step 1: Upload & Scan Bill Photo</h2>
-          <p class="text-xs text-slate-500">Filters out addresses and phone numbers; extracts dishes and CGST/SGST accurately</p>
-        </div>
-      </div>
+    <!-- ════════════════════ TAB 1: NEW BILL CREATION ════════════════════ -->
+    <div id="viewNewBill" class="space-y-6">
 
-      <!-- File Dropzone -->
-      <div class="border-2 border-dashed border-slate-300 hover:border-brand rounded-2xl p-6 text-center bg-slate-50/70 transition">
-        <input type="file" id="receiptFileInput" accept="image/*" onchange="handleReceiptSelected(event)" class="hidden">
-        
-        <div id="uploadPrompt">
-          <div class="w-12 h-12 rounded-full bg-emerald-100 text-brand mx-auto mb-3 flex items-center justify-center text-2xl">
-            🧾
+      <!-- Step 1: Restaurant Details & Payer Info -->
+      <div id="step-1" class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm scroll-mt-20">
+        <div class="flex items-center space-x-3 mb-5 pb-4 border-b border-slate-100">
+          <div class="w-8 h-8 rounded-xl bg-emerald-50 text-brand flex items-center justify-center font-bold text-sm">1</div>
+          <div>
+            <h2 class="text-base font-bold text-navy-900">Step 1: Restaurant Details</h2>
+            <p class="text-xs text-slate-500">Enter hotel or restaurant name</p>
           </div>
-          <p class="text-sm font-bold text-navy-900 mb-1">Upload your restaurant paper bill photo</p>
-          <p class="text-xs text-slate-500 mb-4">Takes 2-3 seconds to scan dishes, rates, CGST and SGST</p>
-          <label for="receiptFileInput" class="inline-block cursor-pointer bg-white border border-slate-300 hover:border-brand text-navy-900 text-xs font-bold px-5 py-2.5 rounded-xl shadow-sm transition">
-            Choose Bill Photo
-          </label>
         </div>
 
-        <!-- Scanning Progress Indicator -->
-        <div id="scanningIndicator" class="hidden py-4">
-          <div class="animate-spin w-8 h-8 border-4 border-brand border-t-transparent rounded-full mx-auto mb-3"></div>
-          <p id="scanProgressText" class="text-sm font-bold text-brand animate-pulse">Scanning bill with OCR engine...</p>
-          <p class="text-xs text-slate-400 mt-1">Filtering out table numbers, dates and extracting real food dishes...</p>
+        <div class="mb-5">
+          <label class="block text-[11px] font-bold uppercase text-slate-600 mb-1">Restaurant / Hotel Name</label>
+          <input type="text" id="restaurantInput" placeholder="e.g. Malabar Cafe, Paragon..." oninput="renderAll()"
+                 class="w-full px-3.5 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-brand text-xs font-semibold text-navy-900">
         </div>
 
-        <!-- Scanned Success Review Banner -->
-        <div id="scannedSuccessBanner" class="hidden mt-4 text-left">
-          <div class="p-4 rounded-xl bg-emerald-50 border border-emerald-200 mb-4 flex items-start justify-between">
-            <div class="flex items-start space-x-3">
-              <img id="receiptImageThumb" src="" alt="Scanned Receipt" class="w-16 h-20 object-cover rounded-lg border border-slate-200 shadow-sm shrink-0">
-              <div>
-                <div class="text-xs font-bold text-emerald-900 flex items-center space-x-1.5">
-                  <span>🎉 Scanned Successfully! Review Items Below</span>
-                </div>
-                <p id="scannedSummaryText" class="text-xs text-emerald-700 mt-1"></p>
-                <div class="text-[11px] text-slate-500 mt-1">
-                  You can edit the dish names or prices right here, or delete any mistaken line before confirming!
-                </div>
+        <!-- Add Food Item Form -->
+        <form onsubmit="addFoodItem(event)" class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 mb-5">
+          <div class="text-[11px] font-bold text-navy-900 uppercase tracking-wider mb-2 flex items-center space-x-1.5">
+            <span>➕ Add Dishes Manually</span>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-12 gap-2">
+            <input type="text" id="itemNameInput" placeholder="Dish name (e.g. Porotta, Chicken Biryani...)" class="sm:col-span-6 px-3 py-2 rounded-lg border border-slate-200 text-xs bg-white" required>
+            <input type="number" id="itemPriceInput" step="0.01" min="0" placeholder="Price per unit (₹)" class="sm:col-span-3 px-3 py-2 rounded-lg border border-slate-200 text-xs bg-white" required>
+            <div class="sm:col-span-3 flex space-x-2">
+              <input type="number" id="itemQtyInput" min="1" value="1" class="w-16 px-2 py-2 rounded-lg border border-slate-200 text-xs text-center bg-white" required>
+              <button type="submit" class="flex-1 bg-brand hover:bg-brand-hover text-white text-xs font-bold rounded-lg py-2 transition shadow-sm">+ Add Dish</button>
+            </div>
+          </div>
+        </form>
+
+        <!-- Items Table -->
+        <div id="itemsTableContainer" class="overflow-x-auto rounded-xl border border-slate-200 mb-5">
+          <!-- Rendered by JS -->
+        </div>
+
+        <!-- Indian Taxes (CGST & SGST) Section -->
+        <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 mb-5">
+          <div class="text-[11px] font-bold text-navy-900 uppercase tracking-wider mb-2.5 flex items-center justify-between">
+            <span>🇮🇳 Indian Tax Breakdown (CGST & SGST) & Extras</span>
+            <span class="text-[10px] text-slate-500 font-normal">Standard Restaurant GST: 5% (2.5% CGST + 2.5% SGST)</span>
+          </div>
+
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+            <div>
+              <label class="block text-[10px] font-semibold text-slate-600 mb-1">Central GST (CGST %)</label>
+              <div class="relative">
+                <input type="number" id="cgstPercentInput" value="2.5" min="0" max="50" step="0.1" oninput="renderAll()"
+                       class="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-semibold text-navy-900">
+                <span class="absolute right-2.5 top-1.5 text-xs text-slate-400">%</span>
               </div>
             </div>
-            <button onclick="removeReceiptPhoto()" class="text-xs text-rose-500 hover:text-rose-700 font-bold px-2 py-1">
-              ✕ Clear
+
+            <div>
+              <label class="block text-[10px] font-semibold text-slate-600 mb-1">State GST (SGST %)</label>
+              <div class="relative">
+                <input type="number" id="sgstPercentInput" value="2.5" min="0" max="50" step="0.1" oninput="renderAll()"
+                       class="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-semibold text-navy-900">
+                <span class="absolute right-2.5 top-1.5 text-xs text-slate-400">%</span>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-[10px] font-semibold text-slate-600 mb-1">Service / Tip (₹)</label>
+              <input type="number" id="serviceChargeInput" value="0" step="1" oninput="renderAll()"
+                     placeholder="0.00" class="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-semibold text-navy-900">
+            </div>
+
+            <div>
+              <label class="block text-[10px] font-semibold text-slate-600 mb-1">Discount (₹)</label>
+              <input type="number" id="discountInput" value="0" min="0" step="1" oninput="renderAll()"
+                     placeholder="0.00" class="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-semibold text-navy-900">
+            </div>
+          </div>
+        </div>
+
+        <!-- Total Breakdown Banner -->
+        <div class="p-4 rounded-xl bg-navy-900 text-white space-y-1.5">
+          <div class="flex justify-between text-xs text-slate-300">
+            <span>Food Items Subtotal:</span>
+            <span id="foodSubtotalDisplay" class="font-bold text-white">₹0.00</span>
+          </div>
+          <div class="flex justify-between text-xs text-slate-300">
+            <span id="cgstLabel">Central GST (CGST 2.5%):</span>
+            <span id="cgstAmountDisplay" class="font-bold text-emerald-300">+₹0.00</span>
+          </div>
+          <div class="flex justify-between text-xs text-slate-300">
+            <span id="sgstLabel">State GST (SGST 2.5%):</span>
+            <span id="sgstAmountDisplay" class="font-bold text-emerald-300">+₹0.00</span>
+          </div>
+          <div id="serviceChargeRow" class="hidden flex justify-between text-xs text-slate-300">
+            <span>Service Charge / Tip:</span>
+            <span id="serviceChargeDisplay" class="font-bold text-emerald-300">+₹0.00</span>
+          </div>
+          <div id="discountRow" class="hidden flex justify-between text-xs text-slate-300">
+            <span>Discount:</span>
+            <span id="discountDisplay" class="font-bold text-rose-300">-₹0.00</span>
+          </div>
+          <div class="pt-2 border-t border-slate-700 flex justify-between items-center">
+            <div>
+              <div class="text-[11px] font-bold text-slate-300 uppercase">Grand Total Restaurant Bill</div>
+              <div id="itemCountLabel" class="text-[10px] text-slate-400">0 dishes listed</div>
+            </div>
+            <div id="grandTotalDisplay" class="text-2xl font-extrabold text-brand">₹0.00</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: Participants -->
+      <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+        <div class="flex items-center space-x-3 mb-5 pb-4 border-b border-slate-100">
+          <div class="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-sm">2</div>
+          <div>
+            <h2 class="text-base font-bold text-navy-900">Step 2: Add Group Members (Friends)</h2>
+            <p class="text-xs text-slate-500">Add the people who shared this dining experience</p>
+          </div>
+        </div>
+
+        <form onsubmit="addParticipant(event)" class="flex space-x-2 mb-3">
+          <input type="text" id="participantInput" placeholder="Friend's name (e.g. Arun, Sneha, Amal...)" class="flex-1 px-3.5 py-2 rounded-xl border border-slate-200 text-xs" required>
+          <button type="submit" class="bg-navy-900 hover:bg-slate-800 text-white text-xs font-bold px-4 py-2 rounded-xl transition">+ Add Person</button>
+        </form>
+
+        <div id="participantsList" class="flex flex-wrap gap-2">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+
+      <!-- Step 3: Splitting Method -->
+      <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+        <div class="flex items-center space-x-3 mb-5 pb-4 border-b border-slate-100">
+          <div class="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold text-sm">3</div>
+          <div>
+            <h2 class="text-base font-bold text-navy-900">Step 3: Choose Splitting Method</h2>
+            <p class="text-xs text-slate-500">Divide equally or assign specific food items to people</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5">
+          <button type="button" onclick="setSplitType('EQUAL')" id="btnEqual" class="p-3.5 rounded-xl border-2 text-left transition border-brand bg-emerald-50/40 ring-1 ring-brand">
+            <div class="text-xs font-bold text-navy-900 mb-0.5">Equal Bill Splitting</div>
+            <div class="text-[11px] text-slate-500">Food subtotal + CGST + SGST divided equally among everyone.</div>
+          </button>
+          <button type="button" onclick="setSplitType('INDIVIDUAL')" id="btnIndividual" class="p-3.5 rounded-xl border-2 text-left transition border-slate-200 bg-white">
+            <div class="text-xs font-bold text-navy-900 mb-0.5">Individual Food Assignment</div>
+            <div class="text-[11px] text-slate-500">Tag who ate what dish. CGST & SGST are split proportionally to what each person ate!</div>
+          </button>
+        </div>
+
+        <!-- Assignment UI -->
+        <div id="assignmentContainer" class="hidden pt-3 border-t border-slate-200 space-y-2.5">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+
+      <!-- Step 4: Bill Summary & Actions -->
+      <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-200 mb-5 gap-3">
+          <div class="flex items-center space-x-3">
+            <div class="w-8 h-8 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center font-bold text-sm">4</div>
+            <div>
+              <h2 class="text-base font-bold text-navy-900">Step 4: Individual Bill Summary & Actions</h2>
+              <p class="text-xs text-slate-500">Review calculated shares, export PDFs, or proceed to Settle Up</p>
+            </div>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button onclick="downloadAllBillsPdf()" class="bg-navy-900 hover:bg-slate-800 text-white text-xs font-bold px-3.5 py-2 rounded-xl transition flex items-center space-x-1 shadow-sm">
+              <span>📥 Download Master PDF</span>
+            </button>
+            <button onclick="switchTab('settlements')" class="bg-brand hover:bg-brand-hover text-white text-xs font-bold px-3.5 py-2 rounded-xl transition flex items-center space-x-1 shadow-sm">
+              <span>💳 Settle Up</span>
             </button>
           </div>
+        </div>
 
-          <!-- Interactive Items Review Drawer -->
-          <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm mb-4">
-            <div class="flex items-center justify-between mb-3 border-b border-slate-100 pb-2">
-              <span class="text-xs font-bold uppercase tracking-wider text-navy-900">
-                🔍 Extracted Items Preview (Click to edit or remove any line):
-              </span>
-              <button onclick="confirmAndApplyScannedItems()" class="bg-brand hover:bg-brand-hover text-white text-xs font-bold px-4 py-1.5 rounded-lg shadow-sm transition">
-                ✓ Confirm & Populate Bill
-              </button>
-            </div>
-
-            <div id="extractedItemsReviewList" class="space-y-2 max-h-60 overflow-y-auto pr-1">
-              <!-- Rendered dynamically -->
-            </div>
-          </div>
-
-          <!-- Expandable Raw Lines Helper -->
-          <div class="border border-slate-200 rounded-xl p-3 bg-slate-50">
-            <div class="flex justify-between items-center cursor-pointer" onclick="toggleRawLinesDrawer()">
-              <span class="text-xs font-semibold text-slate-700">
-                📄 Did the scanner miss a dish? Click to view all text lines from the photo
-              </span>
-              <span id="rawLinesToggleIcon" class="text-xs font-bold text-brand">▼ Show Lines</span>
-            </div>
-            <div id="rawLinesDrawer" class="hidden mt-3 pt-3 border-t border-slate-200 space-y-1 text-xs">
-              <!-- List of raw lines with '+ Add as Dish' button -->
-            </div>
-          </div>
+        <div id="validationBanner" class="mb-4"></div>
+        <div id="summaryCardsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+          <!-- Rendered by JS -->
         </div>
       </div>
     </div>
 
-    <!-- Section 2: Restaurant Details & Food Items Table -->
-    <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm mb-8">
-      <div class="flex items-center space-x-3 mb-6 pb-4 border-b border-slate-100">
-        <div class="w-9 h-9 rounded-xl bg-emerald-50 text-brand flex items-center justify-center font-bold text-base">2</div>
-        <div>
-          <h2 class="text-lg font-bold text-navy-900">Confirmed Dishes & Rates</h2>
-          <p class="text-xs text-slate-500">Items confirmed from your bill (add or modify any dish if needed)</p>
-        </div>
-      </div>
-
-      <div class="mb-5">
-        <label class="block text-xs font-bold uppercase text-slate-600 mb-1.5">Restaurant / Hotel Name</label>
-        <input type="text" id="restaurantInput" placeholder="Restaurant Name" oninput="renderAll()"
-               class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-brand text-sm font-semibold text-navy-900">
-      </div>
-
-      <!-- Add Food Item Form -->
-      <form onsubmit="addFoodItem(event)" class="bg-slate-50 p-4 rounded-xl border border-slate-200 mb-5">
-        <div class="text-xs font-bold text-navy-900 uppercase tracking-wider mb-2.5">+ Add Extra Dish Manually</div>
-        <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
-          <input type="text" id="itemNameInput" placeholder="Dish name (e.g. Porotta, Beef Fry...)" class="sm:col-span-6 px-3 py-2 rounded-lg border border-slate-200 text-sm bg-white" required>
-          <input type="number" id="itemPriceInput" step="0.01" min="0" placeholder="Price (₹)" class="sm:col-span-3 px-3 py-2 rounded-lg border border-slate-200 text-sm bg-white" required>
-          <div class="sm:col-span-3 flex space-x-2">
-            <input type="number" id="itemQtyInput" min="1" value="1" class="w-16 px-2 py-2 rounded-lg border border-slate-200 text-sm text-center bg-white" required>
-            <button type="submit" class="flex-1 bg-brand hover:bg-brand-hover text-white text-xs font-bold rounded-lg py-2 transition">+ Add</button>
-          </div>
-        </div>
-      </form>
-
-      <!-- Items Table -->
-      <div id="itemsTableContainer" class="overflow-x-auto rounded-xl border border-slate-200 mb-5">
-        <!-- Rendered by JS -->
-      </div>
-
-      <!-- Indian Taxes (CGST & SGST) Section -->
-      <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 mb-5">
-        <div class="text-xs font-bold text-navy-900 uppercase tracking-wider mb-3 flex items-center justify-between">
-          <span>🇮🇳 Indian Tax Breakdown (CGST & SGST)</span>
-          <span class="text-[11px] text-slate-500 font-normal">Common in Indian Restaurant Bills</span>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
-          <!-- CGST -->
+    <!-- ════════════════════ TAB 2: SETTLE UP / DEBT LEDGER (SPLITWISE STYLE) ════════════════════ -->
+    <div id="viewSettlements" class="hidden space-y-6">
+      <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-200 mb-5 gap-2">
           <div>
-            <label class="block text-[11px] font-semibold text-slate-600 mb-1">Central GST (CGST %)</label>
-            <div class="relative">
-              <input type="number" id="cgstPercentInput" value="2.5" min="0" max="50" step="0.1" oninput="updateGstTotals()"
-                     class="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white text-sm font-semibold text-navy-900">
-              <span class="absolute right-3 top-2 text-xs font-bold text-slate-400">%</span>
-            </div>
-            <p class="text-[10px] text-slate-400 mt-1">Usually 2.5% in Indian restaurants</p>
+            <h2 class="text-lg font-bold text-navy-900 flex items-center space-x-2">
+              <span>💳 Settle Up & Debt Ledger</span>
+              <span class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-brand">Real-Time Balances</span>
+            </h2>
+            <p class="text-xs text-slate-500">Track participant shares and record settlements (Cash, UPI, or Bank Transfer)</p>
           </div>
-
-          <!-- SGST -->
-          <div>
-            <label class="block text-[11px] font-semibold text-slate-600 mb-1">State GST (SGST %)</label>
-            <div class="relative">
-              <input type="number" id="sgstPercentInput" value="2.5" min="0" max="50" step="0.1" oninput="updateGstTotals()"
-                     class="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white text-sm font-semibold text-navy-900">
-              <span class="absolute right-3 top-2 text-xs font-bold text-slate-400">%</span>
-            </div>
-            <p class="text-[10px] text-slate-400 mt-1">Usually 2.5% in Indian restaurants</p>
-          </div>
-
-          <!-- Service Charge / Round Off -->
-          <div>
-            <label class="block text-[11px] font-semibold text-slate-600 mb-1">Service / Round Off (₹)</label>
-            <input type="number" id="serviceChargeInput" value="0" step="0.1" oninput="renderAll()"
-                   placeholder="0.00" class="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white text-sm font-semibold text-navy-900">
-            <p class="text-[10px] text-slate-400 mt-1">Tips or round-off adjustment</p>
-          </div>
-
-          <!-- Discount -->
-          <div>
-            <label class="block text-[11px] font-semibold text-slate-600 mb-1">Discount (₹)</label>
-            <input type="number" id="discountInput" value="0" min="0" step="1" oninput="renderAll()"
-                   placeholder="0.00" class="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white text-sm font-semibold text-navy-900">
-            <p class="text-[10px] text-slate-400 mt-1">Discount deducted</p>
+          <div class="text-xs text-slate-600 bg-slate-50 px-3 py-2 rounded-xl border border-slate-200">
+            Status: <strong class="text-emerald-700">Active Ledger</strong>
           </div>
         </div>
-      </div>
 
-      <!-- Total Breakdown Banner -->
-      <div class="p-4 rounded-xl bg-navy-900 text-white space-y-2">
-        <div class="flex justify-between text-xs text-slate-300">
-          <span>Food Items Subtotal:</span>
-          <span id="foodSubtotalDisplay" class="font-bold text-white">₹0.00</span>
-        </div>
-        <div class="flex justify-between text-xs text-slate-300">
-          <span id="cgstLabel">Central GST (CGST 2.5%):</span>
-          <span id="cgstAmountDisplay" class="font-bold text-emerald-300">+₹0.00</span>
-        </div>
-        <div class="flex justify-between text-xs text-slate-300">
-          <span id="sgstLabel">State GST (SGST 2.5%):</span>
-          <span id="sgstAmountDisplay" class="font-bold text-emerald-300">+₹0.00</span>
-        </div>
-        <div id="serviceChargeRow" class="hidden flex justify-between text-xs text-slate-300">
-          <span>Service Charge / Round Off:</span>
-          <span id="serviceChargeDisplay" class="font-bold text-emerald-300">+₹0.00</span>
-        </div>
-        <div id="discountRow" class="hidden flex justify-between text-xs text-slate-300">
-          <span>Discount:</span>
-          <span id="discountDisplay" class="font-bold text-rose-300">-₹0.00</span>
-        </div>
-        <div class="pt-2 border-t border-slate-700 flex justify-between items-center">
-          <div>
-            <div class="text-xs font-bold text-slate-300 uppercase">Grand Total Payable</div>
-            <div id="itemCountLabel" class="text-[11px] text-slate-400">0 items</div>
+        <!-- Settlement Progress Bar -->
+        <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 mb-6">
+          <div class="flex justify-between text-xs font-bold text-navy-900 mb-1.5">
+            <span id="settlementProgressLabel">Settlement Progress: ₹0.00 / ₹0.00 (0%)</span>
+            <span id="settlementPendingLabel" class="text-amber-600">Pending: ₹0.00</span>
           </div>
-          <div id="grandTotalDisplay" class="text-2xl font-extrabold text-brand">₹0.00</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Section 3: Participants -->
-    <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm mb-8">
-      <div class="flex items-center space-x-3 mb-6 pb-4 border-b border-slate-100">
-        <div class="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-base">3</div>
-        <div>
-          <h2 class="text-lg font-bold text-navy-900">Add Participants (Friends)</h2>
-          <p class="text-xs text-slate-500">Add the people who shared this meal</p>
-        </div>
-      </div>
-
-      <form onsubmit="addParticipant(event)" class="flex space-x-2 mb-4">
-        <input type="text" id="participantInput" placeholder="Friend's name (e.g. Rahul, Sneha, Amal...)" class="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-sm" required>
-        <button type="submit" class="bg-navy-900 hover:bg-slate-800 text-white text-xs font-bold px-5 py-2.5 rounded-xl transition">+ Add Person</button>
-      </form>
-
-      <div id="participantsList" class="flex flex-wrap gap-2">
-        <!-- Rendered by JS -->
-      </div>
-    </div>
-
-    <!-- Section 4: Splitting Method -->
-    <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm mb-8">
-      <div class="flex items-center space-x-3 mb-6 pb-4 border-b border-slate-100">
-        <div class="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold text-base">4</div>
-        <div>
-          <h2 class="text-lg font-bold text-navy-900">Choose Splitting Method</h2>
-          <p class="text-xs text-slate-500">Divide equally or assign specific food items to people</p>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-        <button type="button" onclick="setSplitType('EQUAL')" id="btnEqual" class="p-4 rounded-xl border-2 text-left transition border-brand bg-emerald-50/40 ring-1 ring-brand">
-          <div class="text-sm font-bold text-navy-900 mb-1">Equal Bill Splitting</div>
-          <div class="text-xs text-slate-500">Food subtotal + CGST + SGST divided equally among everyone.</div>
-        </button>
-        <button type="button" onclick="setSplitType('INDIVIDUAL')" id="btnIndividual" class="p-4 rounded-xl border-2 text-left transition border-slate-200 bg-white">
-          <div class="text-sm font-bold text-navy-900 mb-1">Individual Food Assignment</div>
-          <div class="text-xs text-slate-500">Tag who ate what dish. CGST & SGST are split proportionally to what each person ate!</div>
-        </button>
-      </div>
-
-      <!-- Assignment UI -->
-      <div id="assignmentContainer" class="hidden pt-4 border-t border-slate-200 space-y-3">
-        <!-- Rendered by JS -->
-      </div>
-    </div>
-
-    <!-- Section 5: Bill Summary & PDF Download -->
-    <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm mb-12">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-200 mb-6 gap-3">
-        <div class="flex items-center space-x-3">
-          <div class="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center font-bold text-base">5</div>
-          <div>
-            <h2 class="text-lg font-bold text-navy-900">Individual Bill Summary (CGST & SGST Included)</h2>
-            <p id="summarySubtitle" class="text-xs text-slate-500">Itemized dishes + proportional tax share for each friend</p>
+          <div class="w-full bg-slate-200 rounded-full h-3 overflow-hidden">
+            <div id="settlementProgressBar" class="bg-brand h-3 rounded-full transition-all duration-500" style="width: 0%"></div>
           </div>
         </div>
-        <button onclick="downloadAllBillsPdf()" class="bg-navy-900 hover:bg-slate-800 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition">
-          📥 Download All Bills (Combined PDF)
-        </button>
-      </div>
 
-      <div id="validationBanner" class="mb-4"></div>
-      <div id="summaryCardsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <!-- Rendered by JS -->
+        <!-- Debt Ledger List -->
+        <div id="settlementCardsGrid" class="space-y-3">
+          <!-- Rendered dynamically -->
+        </div>
       </div>
     </div>
 
   </main>
 
+  <!-- Comprehensive Authentication Modal (Standard Name, Email, Password) -->
+  <div id="authModal" class="hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-200">
+      <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-100">
+        <h3 class="font-bold text-navy-900 text-sm flex items-center space-x-1.5">
+          <span>🔐 User Account</span>
+        </h3>
+        <button onclick="closeAuthModal()" class="text-slate-400 hover:text-slate-600 font-bold">✕</button>
+      </div>
+
+      <!-- Tab selection: Sign In vs Register -->
+      <div class="flex border-b border-slate-200 mb-4">
+        <button onclick="setAuthTab('login')" id="authTabLogin" class="flex-1 pb-2 text-xs font-bold text-brand border-b-2 border-brand">
+          Sign In
+        </button>
+        <button onclick="setAuthTab('register')" id="authTabRegister" class="flex-1 pb-2 text-xs font-bold text-slate-400 hover:text-slate-600">
+          Create Account
+        </button>
+      </div>
+
+      <!-- Form 1: Sign In -->
+      <div id="authFormLogin" class="space-y-3 mb-4">
+        <div>
+          <label class="block text-[10px] font-bold text-slate-600 uppercase mb-1">Username or Email</label>
+          <input type="text" id="loginUsernameInput" placeholder="Enter username or email" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:border-brand font-semibold">
+        </div>
+        <div>
+          <label class="block text-[10px] font-bold text-slate-600 uppercase mb-1">Password</label>
+          <input type="password" id="loginPasswordInput" placeholder="Enter password" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:border-brand">
+        </div>
+        <button onclick="handleLogin()" class="w-full bg-brand hover:bg-brand-hover text-white text-xs font-bold py-2.5 rounded-xl transition shadow-sm">
+          Sign In
+        </button>
+      </div>
+
+      <!-- Form 2: Register (Any User) -->
+      <div id="authFormRegister" class="hidden space-y-2.5 mb-4">
+        <div>
+          <label class="block text-[10px] font-bold text-slate-600 uppercase mb-1">Full Name</label>
+          <input type="text" id="regFullNameInput" placeholder="e.g. Arun Kumar, Anjali Nair" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:border-brand font-semibold">
+        </div>
+        <div>
+          <label class="block text-[10px] font-bold text-slate-600 uppercase mb-1">Username</label>
+          <input type="text" id="regUsernameInput" placeholder="e.g. arun_k" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:border-brand">
+        </div>
+        <div>
+          <label class="block text-[10px] font-bold text-slate-600 uppercase mb-1">Email</label>
+          <input type="email" id="regEmailInput" placeholder="name@domain.com" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:border-brand">
+        </div>
+        <div>
+          <label class="block text-[10px] font-bold text-slate-600 uppercase mb-1">Password</label>
+          <input type="password" id="regPasswordInput" placeholder="At least 6 characters" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:border-brand">
+        </div>
+        <button onclick="handleRegister()" class="w-full bg-brand hover:bg-brand-hover text-white text-xs font-bold py-2.5 rounded-xl transition shadow-sm">
+          Create Account & Sign In
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settle Up Modal -->
+  <div id="settleModal" class="hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-200">
+      <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-100">
+        <h3 class="font-bold text-navy-900 text-sm flex items-center space-x-1.5">
+          <span>💳 Record Payment (Settle Up)</span>
+        </h3>
+        <button onclick="closeSettleModal()" class="text-slate-400 hover:text-slate-600 font-bold">✕</button>
+      </div>
+
+      <div class="mb-4">
+        <div class="text-xs text-slate-500 mb-1">Settle debt for:</div>
+        <div id="settleParticipantName" class="text-base font-extrabold text-navy-900">Friend Name</div>
+        <div class="text-sm font-bold text-brand mt-1" id="settleAmountLabel">Amount: ₹0.00</div>
+      </div>
+
+      <div class="mb-5">
+        <label class="block text-[11px] font-bold text-slate-600 uppercase mb-2">Select Payment Method</label>
+        <div class="grid grid-cols-3 gap-2">
+          <label class="cursor-pointer border-2 border-slate-200 hover:border-brand rounded-xl p-2.5 text-center text-xs font-bold text-navy-900 has-[:checked]:border-brand has-[:checked]:bg-emerald-50">
+            <input type="radio" name="payMethod" value="Cash" checked class="hidden">
+            💵 Cash
+          </label>
+          <label class="cursor-pointer border-2 border-slate-200 hover:border-brand rounded-xl p-2.5 text-center text-xs font-bold text-navy-900 has-[:checked]:border-brand has-[:checked]:bg-emerald-50">
+            <input type="radio" name="payMethod" value="UPI / Online" class="hidden">
+            📱 UPI / GPay
+          </label>
+          <label class="cursor-pointer border-2 border-slate-200 hover:border-brand rounded-xl p-2.5 text-center text-xs font-bold text-navy-900 has-[:checked]:border-brand has-[:checked]:bg-emerald-50">
+            <input type="radio" name="payMethod" value="Bank Transfer" class="hidden">
+            🏦 Transfer
+          </label>
+        </div>
+      </div>
+
+      <button onclick="confirmSettlePayment()" class="w-full bg-brand hover:bg-brand-hover text-white text-xs font-bold py-2.5 rounded-xl transition shadow-sm">
+        Confirm & Mark as Settled ✓
+      </button>
+    </div>
+  </div>
+
   <footer class="border-t border-slate-200 bg-white py-4 text-center text-xs text-slate-500">
-    SplitBite &bull; Accurate Indian Bill Splitter with Anti-Junk OCR &bull; © 2026
+    SplitBite &bull; Smart Restaurant Bill Splitter & Debt Settlement &bull; © 2026
   </footer>
 
-  <!-- Application Logic & Indian OCR Parser -->
+  <!-- Application Logic -->
   <script>
     let state = {
       restaurantName: '',
-      receiptPhotoData: null,
-      receiptFileName: '',
-      rawOcrLines: [],
-      pendingExtractedItems: [], // Items ready for review
+      paidBy: '',
       foodItems: [],
       cgstPercent: 2.5,
       sgstPercent: 2.5,
@@ -371,457 +445,35 @@
       discount: 0.0,
       participants: [],
       splitType: 'EQUAL',
-      assignments: {}
+      assignments: {},
+      settlementStatus: {}, // participantId -> { isPaid: boolean, method: string, timestamp: string }
+      currentUser: JSON.parse(localStorage.getItem('splitbite_logged_user') || 'null'),
+      registeredUsers: JSON.parse(localStorage.getItem('splitbite_users_db') || '[]'),
+      activeSettleId: null
     };
 
-    function updateGstTotals() {
-      state.cgstPercent = parseFloat(document.getElementById('cgstPercentInput').value) || 0;
-      state.sgstPercent = parseFloat(document.getElementById('sgstPercentInput').value) || 0;
-      renderAll();
-    }
-
-    function toggleRawLinesDrawer() {
-      const drawer = document.getElementById('rawLinesDrawer');
-      const icon = document.getElementById('rawLinesToggleIcon');
-      drawer.classList.toggle('hidden');
-      icon.innerText = drawer.classList.contains('hidden') ? '▼ Show Lines' : '▲ Hide Lines';
-    }
-
-    // Handle Image Upload & Preprocessing for Sharp OCR
-    async function handleReceiptSelected(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = async function(event) {
-        state.receiptPhotoData = event.target.result;
-        state.receiptFileName = file.name;
-        
-        document.getElementById('uploadPrompt').classList.add('hidden');
-        document.getElementById('scanningIndicator').classList.remove('hidden');
-        document.getElementById('scannedSuccessBanner').classList.add('hidden');
-
-        try {
-          const enhancedImage = await enhanceImageForOcr(event.target.result);
-          await runOcrOnImage(enhancedImage, file.name);
-        } catch (err) {
-          console.warn("OCR notice:", err);
-          runOcrOnImage(event.target.result, file.name);
-        }
-      };
-      reader.readAsDataURL(file);
-    }
-
-    // High Contrast Preprocessing for Thermal Paper Receipts
-    function enhanceImageForOcr(dataUrl) {
-      return new Promise((resolve) => {
-        const img = new Image();
-        img.onload = () => {
-          const canvas = document.createElement('canvas');
-          canvas.width = img.width;
-          canvas.height = img.height;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0);
-
-          try {
-            const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            const d = imgData.data;
-            const contrast = 1.35;
-            const factor = (259 * (contrast + 255)) / (255 * (259 - contrast));
-            for (let i = 0; i < d.length; i += 4) {
-              const gray = 0.299 * d[i] + 0.587 * d[i+1] + 0.114 * d[i+2];
-              const cGray = factor * (gray - 128) + 128;
-              d[i] = d[i+1] = d[i+2] = cGray > 135 ? 255 : (cGray < 85 ? 0 : cGray);
-            }
-            ctx.putImageData(imgData, 0, 0);
-            resolve(canvas.toDataURL('image/png'));
-          } catch(e) {
-            resolve(dataUrl);
-          }
-        };
-        img.onerror = () => resolve(dataUrl);
-        img.src = dataUrl;
-      });
-    }
-
-    // Run Tesseract OCR on enhanced image
-    async function runOcrOnImage(imageData, fileName) {
-      document.getElementById('scanProgressText').innerText = "Scanning text lines with OCR engine...";
-
-      let extractedText = "";
-
-      if (window.Tesseract) {
-        try {
-          const result = await Tesseract.recognize(imageData, 'eng', {
-            logger: m => {
-              if (m.status === 'recognizing text') {
-                const pct = Math.round(m.progress * 100);
-                document.getElementById('scanProgressText').innerText = `Recognizing text (${pct}%)...`;
-              }
-            }
-          });
-          extractedText = result.data.text || "";
-        } catch (e) {
-          console.error("Tesseract error:", e);
-        }
-      }
-
-      // Parse with Anti-Junk Filter
-      parseAndShowReview(extractedText, imageData, fileName);
-    }
-
-    // Smart Anti-Junk Parser specifically for Indian Restaurant Receipts
-    function parseAndShowReview(rawText, imageData, fileName) {
-      const lines = rawText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-      state.rawOcrLines = lines;
-
-      let detectedRestaurant = "";
-      let candidateItems = [];
-      let cgst = 2.5;
-      let sgst = 2.5;
-      let service = 0.0;
-      let discount = 0.0;
-
-      // Anti-Junk Words to Exclude from Food Items:
-      const junkRegex = /bill|tax|gst|fssai|gstin|date|time|table|token|order|cashier|phone|tel|mob|cell|address|subtotal|sub\s*tot|total|balance|cash|card|upi|gpay|paytm|change|tender|welcome|visit|again|thank|pax|server|stn|kerala|road|street|floor|counter|description|rate|amt|amount|qty/i;
-
-      // 1. Detect Restaurant Name: First line with 3-35 chars that isn't junk
-      for (let line of lines) {
-        if (!junkRegex.test(line) && line.length >= 3 && line.length <= 40) {
-          detectedRestaurant = line.replace(/[^a-zA-Z0-9\s&'-]/g, '').trim();
-          break;
-        }
-      }
-
-      // 2. Scan Lines
-      for (let i = 0; i < lines.length; i++) {
-        const line = lines[i];
-
-        // CGST detection
-        if (/cgst/i.test(line)) {
-          const m = line.match(/(\d+(\.\d+)?)\s*%/);
-          if (m) cgst = parseFloat(m[1]);
-          continue;
-        }
-
-        // SGST detection
-        if (/sgst/i.test(line)) {
-          const m = line.match(/(\d+(\.\d+)?)\s*%/);
-          if (m) sgst = parseFloat(m[1]);
-          continue;
-        }
-
-        // Round Off / Service
-        if (/round\s*off|service|tip/i.test(line)) {
-          const m = line.match(/[-+]?\s*(\d+(\.\d{1,2})?)/);
-          if (m) service = parseFloat(m[1]);
-          continue;
-        }
-
-        // Discount
-        if (/discount|disc|promo/i.test(line)) {
-          const m = line.match(/(\d+(\.\d{1,2})?)/);
-          if (m) discount = parseFloat(m[1]);
-          continue;
-        }
-
-        // Skip lines that have junk keywords
-        if (junkRegex.test(line)) {
-          continue;
-        }
-
-        // Check if line looks like a phone number (e.g., 10 digits) or date (e.g. 2026/06/11)
-        if (/\b\d{10}\b/.test(line) || /\d{2}[-/]\d{2}[-/]\d{2,4}/.test(line) || /\d{1,2}:\d{2}/.test(line)) {
-          continue;
-        }
-
-        // Parse dishes: Extract dish name and price
-        const numbers = line.match(/\d+(\.\d{1,2})?/g);
-        const namePart = line.replace(/[\d.,₹=xX*]/g, ' ').replace(/\s+/g, ' ').trim();
-
-        if (numbers && numbers.length >= 1 && numbers.length <= 4 && namePart.length >= 2) {
-          const lastNum = parseFloat(numbers[numbers.length - 1]);
-          let qty = 1;
-
-          // Check if first number is a realistic quantity (1 to 20)
-          if (numbers.length >= 2) {
-            const firstNum = parseInt(numbers[0], 10);
-            if (firstNum >= 1 && firstNum <= 20 && firstNum !== lastNum) {
-              qty = firstNum;
-            }
-          }
-
-          // Typical single dish price between ₹10 and ₹3500
-          if (lastNum >= 10 && lastNum <= 4000) {
-            candidateItems.push({
-              id: 'rev_' + Date.now() + '_' + candidateItems.length,
-              name: namePart,
-              price: qty > 1 ? Number((lastNum / qty).toFixed(2)) : lastNum,
-              quantity: qty
-            });
-          }
-        }
-      }
-
-      state.restaurantName = detectedRestaurant || "Restaurant Bill";
-      state.cgstPercent = cgst;
-      state.sgstPercent = sgst;
-      state.serviceCharge = service;
-      state.discount = discount;
-      state.pendingExtractedItems = candidateItems;
-
-      // Show Review Drawer
-      document.getElementById('scanningIndicator').classList.add('hidden');
-      document.getElementById('scannedSuccessBanner').classList.remove('hidden');
-      document.getElementById('receiptImageThumb').src = imageData;
-      document.getElementById('scannedSummaryText').innerText = 
-        `Found ${candidateItems.length} candidate dishes & CGST (${cgst}%) + SGST (${sgst}%). Review below:`;
-
-      renderReviewDrawer();
-      renderRawLinesDrawer();
-    }
-
-    // Render Scanned Items Review Box so user can edit/delete before applying
-    function renderReviewDrawer() {
-      const container = document.getElementById('extractedItemsReviewList');
-      if (state.pendingExtractedItems.length === 0) {
-        container.innerHTML = `
-          <div class="p-3 text-xs text-amber-700 bg-amber-50 rounded-lg">
-            No clear dishes could be detected from this photo. Check the lines below or add dishes manually.
-          </div>`;
-        return;
-      }
-
-      container.innerHTML = state.pendingExtractedItems.map((item, idx) => `
-        <div class="flex items-center space-x-2 bg-slate-50 p-2 rounded-lg border border-slate-200 text-xs">
-          <span class="text-slate-400 font-bold w-4 text-center">${idx + 1}</span>
-          <input type="text" value="${item.name}" onchange="updatePendingItem('${item.id}', 'name', this.value)"
-                 class="flex-1 px-2 py-1 rounded border border-slate-200 bg-white font-semibold text-navy-900" placeholder="Dish Name">
-          <div class="flex items-center space-x-1">
-            <span class="text-slate-400">Qty:</span>
-            <input type="number" min="1" value="${item.quantity}" onchange="updatePendingItem('${item.id}', 'quantity', this.value)"
-                   class="w-12 px-1 py-1 rounded border border-slate-200 bg-white text-center font-bold">
-          </div>
-          <div class="flex items-center space-x-1">
-            <span class="text-slate-400">₹</span>
-            <input type="number" step="0.5" value="${item.price}" onchange="updatePendingItem('${item.id}', 'price', this.value)"
-                   class="w-16 px-1 py-1 rounded border border-slate-200 bg-white text-right font-bold text-navy-900">
-          </div>
-          <button onclick="removePendingItem('${item.id}')" class="text-slate-400 hover:text-rose-500 font-bold px-1.5 py-1" title="Remove line">✕</button>
-        </div>
-      `).join('');
-    }
-
-    function updatePendingItem(id, field, value) {
-      state.pendingExtractedItems = state.pendingExtractedItems.map(it => {
-        if (it.id === id) {
-          return {
-            ...it,
-            [field]: field === 'price' ? parseFloat(value) || 0 : (field === 'quantity' ? parseInt(value, 10) || 1 : value)
-          };
-        }
-        return it;
-      });
-    }
-
-    function removePendingItem(id) {
-      state.pendingExtractedItems = state.pendingExtractedItems.filter(it => it.id !== id);
-      renderReviewDrawer();
-    }
-
-    // Render list of all raw lines so user can click to add any missed line
-    function renderRawLinesDrawer() {
-      const container = document.getElementById('rawLinesDrawer');
-      if (state.rawOcrLines.length === 0) {
-        container.innerHTML = `<div class="text-slate-400 italic">No text lines captured.</div>`;
-        return;
-      }
-
-      container.innerHTML = state.rawOcrLines.map((line, idx) => `
-        <div class="flex justify-between items-center py-1 px-2 rounded hover:bg-slate-100 border-b border-slate-100 last:border-0">
-          <span class="text-slate-600 font-mono">${line}</span>
-          <button onclick="addRawLineAsDish('${encodeURIComponent(line)}')" class="text-[11px] font-bold text-brand hover:underline px-2 py-0.5 bg-white border border-slate-200 rounded shrink-0">
-            + Add as Dish
-          </button>
-        </div>
-      `).join('');
-    }
-
-    function addRawLineAsDish(encodedLine) {
-      const line = decodeURIComponent(encodedLine);
-      const numbers = line.match(/\d+(\.\d{1,2})?/g);
-      const namePart = line.replace(/[\d.,₹=xX*]/g, ' ').replace(/\s+/g, ' ').trim() || "Dish Item";
-      const price = numbers ? parseFloat(numbers[numbers.length - 1]) : 50;
-
-      state.pendingExtractedItems.push({
-        id: 'rev_' + Date.now(),
-        name: namePart,
-        price: price,
-        quantity: 1
-      });
-      renderReviewDrawer();
-    }
-
-    // Confirm Reviewed Items and Populate the Main Bill Form
-    function confirmAndApplyScannedItems() {
-      if (state.pendingExtractedItems.length === 0) {
-        alert("Please have at least one dish in the list.");
-        return;
-      }
-
-      state.foodItems = state.pendingExtractedItems.map(it => ({
-        id: 'item_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
-        name: it.name,
-        price: it.price,
-        quantity: it.quantity
-      }));
-
-      document.getElementById('restaurantInput').value = state.restaurantName;
-      document.getElementById('cgstPercentInput').value = state.cgstPercent;
-      document.getElementById('sgstPercentInput').value = state.sgstPercent;
-      document.getElementById('serviceChargeInput').value = state.serviceCharge;
-      document.getElementById('discountInput').value = state.discount;
-
-      // Auto-add sample friends if list is empty
-      if (state.participants.length === 0) {
-        state.participants = [
-          { id: 'p_1', name: 'Rahul' },
-          { id: 'p_2', name: 'Sneha' },
-          { id: 'p_3', name: 'Amal' }
-        ];
-      }
-
-      renderAll();
-
-      // Scroll smoothly down to the dishes table
-      document.getElementById('restaurantInput').scrollIntoView({ behavior: 'smooth' });
-    }
-
-    // Try Sample Indian Receipt with CGST & SGST
-    function loadSampleIndianReceipt() {
-      const canvas = document.createElement('canvas');
-      canvas.width = 400;
-      canvas.height = 560;
-      const ctx = canvas.getContext('2d');
-
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, 400, 560);
-      ctx.strokeStyle = '#e2e8f0';
-      ctx.strokeRect(5, 5, 390, 550);
-
-      ctx.fillStyle = '#0f172a';
-      ctx.font = 'bold 18px Helvetica';
-      ctx.textAlign = 'center';
-      ctx.fillText('MALABAR RESTAURANT & CAFE', 200, 45);
-
-      ctx.font = '11px Helvetica';
-      ctx.fillStyle = '#64748b';
-      ctx.fillText('GSTIN: 32AABCM1234F1Z8 | FSSAI: 11319001000213', 200, 65);
-      ctx.fillText('Bill #8942 | Date: 06-Nov-2026', 200, 82);
-
-      ctx.strokeStyle = '#cbd5e1';
-      ctx.beginPath();
-      ctx.moveTo(20, 95);
-      ctx.lineTo(380, 95);
-      ctx.stroke();
-
-      ctx.font = 'bold 12px Helvetica';
-      ctx.fillStyle = '#0f172a';
-      ctx.textAlign = 'left';
-      ctx.fillText('ITEM', 25, 120);
-      ctx.textAlign = 'right';
-      ctx.fillText('QTY', 280, 120);
-      ctx.fillText('AMOUNT', 375, 120);
-
-      const items = [
-        ['Kerala Porotta', '4', '72.00'],
-        ['Chicken Roast', '1', '180.00'],
-        ['Appam', '5', '60.00'],
-        ['Special Tea', '3', '45.00']
-      ];
-
-      ctx.font = '12px Helvetica';
-      let y = 148;
-      items.forEach(it => {
-        ctx.textAlign = 'left';
-        ctx.fillText(it[0], 25, y);
-        ctx.textAlign = 'right';
-        ctx.fillText(it[1], 280, y);
-        ctx.fillText('INR ' + it[2], 375, y);
-        y += 28;
+    // Tab Navigation
+    function switchTab(tabName) {
+      ['newBill', 'settlements'].forEach(t => {
+        const v = document.getElementById('view' + capitalize(t));
+        const b = document.getElementById('tabBtn' + capitalize(t));
+        if (v) v.classList.add('hidden');
+        if (b) b.className = 'px-3 py-1.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition';
       });
 
-      ctx.beginPath();
-      ctx.moveTo(20, y + 10);
-      ctx.lineTo(380, y + 10);
-      ctx.stroke();
+      const activeView = document.getElementById('view' + capitalize(tabName));
+      const activeBtn = document.getElementById('tabBtn' + capitalize(tabName));
+      if (activeView) activeView.classList.remove('hidden');
+      if (activeBtn) activeBtn.className = 'px-3 py-1.5 rounded-xl text-xs font-bold bg-navy-900 text-white transition';
 
-      y += 35;
-      ctx.fillText('Food Subtotal: INR 357.00', 375, y);
-      y += 22;
-      ctx.fillText('CGST (2.5%): INR 8.93', 375, y);
-      y += 22;
-      ctx.fillText('SGST (2.5%): INR 8.93', 375, y);
-      y += 22;
-      ctx.fillText('Round Off: INR 0.14', 375, y);
-      y += 28;
-      ctx.font = 'bold 15px Helvetica';
-      ctx.fillText('NET TOTAL: INR 375.00', 375, y);
-
-      const sampleDataUrl = canvas.toDataURL('image/png');
-      
-      document.getElementById('uploadPrompt').classList.add('hidden');
-      document.getElementById('scanningIndicator').classList.remove('hidden');
-      document.getElementById('scanProgressText').innerText = "Reading Indian bill (CGST + SGST)...";
-
-      setTimeout(() => {
-        state.pendingExtractedItems = [
-          { id: 'rev_1', name: 'Kerala Porotta', price: 18.00, quantity: 4 },
-          { id: 'rev_2', name: 'Chicken Roast', price: 180.00, quantity: 1 },
-          { id: 'rev_3', name: 'Appam', price: 12.00, quantity: 5 },
-          { id: 'rev_4', name: 'Special Tea', price: 15.00, quantity: 3 }
-        ];
-        state.restaurantName = "Malabar Restaurant & Cafe";
-        state.cgstPercent = 2.5;
-        state.sgstPercent = 2.5;
-        state.serviceCharge = 0.14;
-        state.discount = 0.0;
-        state.rawOcrLines = [
-          "MALABAR RESTAURANT & CAFE",
-          "GSTIN: 32AABCM1234F1Z8",
-          "Bill #8942 Date: 06-Nov-2026",
-          "Kerala Porotta 4 72.00",
-          "Chicken Roast 1 180.00",
-          "Appam 5 60.00",
-          "Special Tea 3 45.00",
-          "CGST @ 2.5% 8.93",
-          "SGST @ 2.5% 8.93",
-          "Round Off 0.14",
-          "NET TOTAL 375.00"
-        ];
-
-        document.getElementById('scanningIndicator').classList.add('hidden');
-        document.getElementById('scannedSuccessBanner').classList.remove('hidden');
-        document.getElementById('receiptImageThumb').src = sampleDataUrl;
-        document.getElementById('scannedSummaryText').innerText = 
-          `Found 4 dishes & CGST (2.5%) + SGST (2.5%). Review below:`;
-
-        renderReviewDrawer();
-        renderRawLinesDrawer();
-      }, 700);
+      if (tabName === 'settlements') renderSettlementsView();
     }
 
-    function removeReceiptPhoto() {
-      state.receiptPhotoData = null;
-      state.receiptFileName = '';
-      state.rawOcrLines = [];
-      state.pendingExtractedItems = [];
-      document.getElementById('receiptFileInput').value = '';
-      document.getElementById('uploadPrompt').classList.remove('hidden');
-      document.getElementById('scannedSuccessBanner').classList.add('hidden');
-      document.getElementById('scanningIndicator').classList.add('hidden');
+    function capitalize(str) {
+      return str.charAt(0).toUpperCase() + str.slice(1);
     }
 
+    // Food Items Management
     function addFoodItem(e) {
       e.preventDefault();
       const name = document.getElementById('itemNameInput').value.trim();
@@ -830,7 +482,7 @@
       if (!name || isNaN(price) || price <= 0 || isNaN(qty) || qty < 1) return;
 
       const newItem = {
-        id: 'item_' + Date.now(),
+        id: 'item_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
         name,
         price,
         quantity: qty
@@ -856,13 +508,16 @@
         alert('Participant with this name already exists.');
         return;
       }
-      state.participants.push({ id: 'p_' + Date.now(), name });
+      const pId = 'p_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6);
+      state.participants.push({ id: pId, name });
+      state.settlementStatus[pId] = { isPaid: false, method: '', timestamp: '' };
       document.getElementById('participantInput').value = '';
       renderAll();
     }
 
     function removeParticipant(id) {
       state.participants = state.participants.filter(p => p.id !== id);
+      delete state.settlementStatus[id];
       for (let k in state.assignments) {
         state.assignments[k] = state.assignments[k].filter(pId => pId !== id);
       }
@@ -872,12 +527,12 @@
     function setSplitType(type) {
       state.splitType = type;
       document.getElementById('btnEqual').className = type === 'EQUAL'
-        ? 'p-4 rounded-xl border-2 text-left transition border-brand bg-emerald-50/40 ring-1 ring-brand'
-        : 'p-4 rounded-xl border-2 text-left transition border-slate-200 bg-white';
+        ? 'p-3.5 rounded-xl border-2 text-left transition border-brand bg-emerald-50/40 ring-1 ring-brand'
+        : 'p-3.5 rounded-xl border-2 text-left transition border-slate-200 bg-white';
       document.getElementById('btnIndividual').className = type === 'INDIVIDUAL'
-        ? 'p-4 rounded-xl border-2 text-left transition border-brand bg-emerald-50/40 ring-1 ring-brand'
-        : 'p-4 rounded-xl border-2 text-left transition border-slate-200 bg-white';
-      document.getElementById('assignmentContainer').className = type === 'INDIVIDUAL' ? 'pt-4 border-t border-slate-200 space-y-3' : 'hidden';
+        ? 'p-3.5 rounded-xl border-2 text-left transition border-brand bg-emerald-50/40 ring-1 ring-brand'
+        : 'p-3.5 rounded-xl border-2 text-left transition border-slate-200 bg-white';
+      document.getElementById('assignmentContainer').className = type === 'INDIVIDUAL' ? 'pt-3 border-t border-slate-200 space-y-2.5' : 'hidden';
       renderAll();
     }
 
@@ -944,6 +599,7 @@
         return state.participants.map((p, idx) => {
           let myShare = (idx === count - 1) ? Number((grandTotal - running).toFixed(2)) : Number(rawShare.toFixed(2));
           running += myShare;
+          const status = state.settlementStatus[p.id] || { isPaid: false, method: '', timestamp: '' };
           return {
             id: p.id,
             name: p.name,
@@ -957,15 +613,30 @@
             foodSubtotal: Number(foodPortion.toFixed(2)),
             cgstShare: Number(cgstPortion.toFixed(2)),
             sgstShare: Number(sgstPortion.toFixed(2)),
-            payable: myShare
+            payable: myShare,
+            isPaid: status.isPaid,
+            method: status.method,
+            settledTime: status.timestamp
           };
         });
       }
 
-      // INDIVIDUAL SPLIT WITH PROPORTIONAL CGST & SGST
+      // INDIVIDUAL SPLIT
       const pMap = {};
       state.participants.forEach(p => {
-        pMap[p.id] = { id: p.id, name: p.name, items: [], foodSubtotal: 0, cgstShare: 0, sgstShare: 0, payable: 0 };
+        const status = state.settlementStatus[p.id] || { isPaid: false, method: '', timestamp: '' };
+        pMap[p.id] = {
+          id: p.id,
+          name: p.name,
+          items: [],
+          foodSubtotal: 0,
+          cgstShare: 0,
+          sgstShare: 0,
+          payable: 0,
+          isPaid: status.isPaid,
+          method: status.method,
+          settledTime: status.timestamp
+        };
       });
 
       state.foodItems.forEach(item => {
@@ -1011,6 +682,7 @@
 
     function renderAll() {
       state.restaurantName = document.getElementById('restaurantInput').value;
+
       const totals = calculateBillTotals();
 
       document.getElementById('foodSubtotalDisplay').innerText = `₹${totals.foodSubtotal.toFixed(2)}`;
@@ -1021,7 +693,6 @@
       document.getElementById('grandTotalDisplay').innerText = `₹${totals.grandTotal.toFixed(2)}`;
       document.getElementById('itemCountLabel').innerText = `${state.foodItems.length} dish(es) listed`;
 
-      // Service charge row
       const svcRow = document.getElementById('serviceChargeRow');
       if (totals.serviceCharge !== 0) {
         svcRow.classList.remove('hidden');
@@ -1030,36 +701,44 @@
         svcRow.classList.add('hidden');
       }
 
-      // Render Food Items Table
+      const discRow = document.getElementById('discountRow');
+      if (totals.discount !== 0) {
+        discRow.classList.remove('hidden');
+        document.getElementById('discountDisplay').innerText = `-₹${totals.discount.toFixed(2)}`;
+      } else {
+        discRow.classList.add('hidden');
+      }
+
+      // Items table
       const tableBox = document.getElementById('itemsTableContainer');
       if (state.foodItems.length === 0) {
-        tableBox.innerHTML = `<div class="p-6 text-center text-xs text-slate-400">No dishes confirmed yet. Upload your bill photo above to review and add dishes!</div>`;
+        tableBox.innerHTML = `<div class="p-5 text-center text-xs text-slate-400">No dishes added yet. Use the form above to add dishes!</div>`;
       } else {
         let rows = state.foodItems.map((item, idx) => `
           <tr class="border-b border-slate-100 hover:bg-slate-50 text-xs">
-            <td class="p-3 text-slate-400">${idx + 1}</td>
-            <td class="p-3 font-semibold text-navy-900">${item.name}</td>
-            <td class="p-3 text-right text-slate-600">₹${item.price.toFixed(2)}</td>
-            <td class="p-3 text-center font-bold">${item.quantity}</td>
-            <td class="p-3 text-right font-bold text-navy-900">₹${(item.price * item.quantity).toFixed(2)}</td>
-            <td class="p-3 text-center">
-              <button onclick="removeItem('${item.id}')" class="text-slate-400 hover:text-rose-500 font-bold px-2 py-1">✕</button>
+            <td class="p-2.5 text-slate-400">${idx + 1}</td>
+            <td class="p-2.5 font-semibold text-navy-900">${item.name}</td>
+            <td class="p-2.5 text-right text-slate-600">₹${item.price.toFixed(2)}</td>
+            <td class="p-2.5 text-center font-bold">${item.quantity}</td>
+            <td class="p-2.5 text-right font-bold text-navy-900">₹${(item.price * item.quantity).toFixed(2)}</td>
+            <td class="p-2.5 text-center">
+              <button onclick="removeItem('${item.id}')" class="text-slate-400 hover:text-rose-500 font-bold px-2 py-0.5">✕</button>
             </td>
           </tr>
         `).join('');
         tableBox.innerHTML = `
           <table class="w-full text-left">
             <thead>
-              <tr class="bg-slate-100 text-[11px] font-bold text-slate-600 uppercase">
-                <th class="p-3">#</th><th class="p-3">Item</th><th class="p-3 text-right">Price</th>
-                <th class="p-3 text-center">Qty</th><th class="p-3 text-right">Subtotal</th><th class="p-3 text-center">Action</th>
+              <tr class="bg-slate-100 text-[10px] font-bold text-slate-600 uppercase">
+                <th class="p-2.5">#</th><th class="p-2.5">Item</th><th class="p-2.5 text-right">Price</th>
+                <th class="p-2.5 text-center">Qty</th><th class="p-2.5 text-right">Subtotal</th><th class="p-2.5 text-center">Action</th>
               </tr>
             </thead>
             <tbody>${rows}</tbody>
           </table>`;
       }
 
-      // Render Participants
+      // Participants list
       const pBox = document.getElementById('participantsList');
       if (state.participants.length === 0) {
         pBox.innerHTML = `<div class="text-xs text-slate-400 italic">No participants added yet.</div>`;
@@ -1073,11 +752,11 @@
         `).join('');
       }
 
-      // Render Assignments
+      // Assignment UI
       const aBox = document.getElementById('assignmentContainer');
       if (state.splitType === 'INDIVIDUAL') {
         if (state.foodItems.length === 0 || state.participants.length === 0) {
-          aBox.innerHTML = `<div class="text-xs text-amber-700 bg-amber-50 p-3 rounded-lg">Please add items and participants first.</div>`;
+          aBox.innerHTML = `<div class="text-xs text-amber-700 bg-amber-50 p-2.5 rounded-lg">Please add dishes and participants first.</div>`;
         } else {
           aBox.innerHTML = state.foodItems.map(item => {
             const assigned = state.assignments[item.id] || [];
@@ -1088,33 +767,33 @@
             }).join(' ');
 
             return `
-              <div class="p-3 rounded-xl border border-slate-200 bg-slate-50/50">
-                <div class="flex justify-between items-center mb-2">
+              <div class="p-2.5 rounded-xl border border-slate-200 bg-slate-50/50">
+                <div class="flex justify-between items-center mb-1.5">
                   <div class="font-bold text-xs text-navy-900">${item.name} (Qty: ${item.quantity} &bull; ₹${itemTotal.toFixed(2)})</div>
-                  <button onclick="toggleSelectAllForDish('${item.id}')" class="text-[11px] font-semibold text-slate-600 hover:text-navy-900 bg-white border border-slate-200 px-2 py-0.5 rounded">
+                  <button onclick="toggleSelectAllForDish('${item.id}')" class="text-[10px] font-semibold text-slate-600 hover:text-navy-900 bg-white border border-slate-200 px-2 py-0.5 rounded">
                     ${assigned.length === state.participants.length ? 'Deselect All' : 'Shared by All'}
                   </button>
                 </div>
-                <div class="flex flex-wrap gap-1.5">${pills}</div>
+                <div class="flex flex-wrap gap-1">${pills}</div>
               </div>`;
           }).join('');
         }
       }
 
-      // Render Summary Cards
+      // Summary
       const splits = calculateSplits();
       const sBox = document.getElementById('summaryCardsGrid');
       const valBox = document.getElementById('validationBanner');
 
       if (splits.length === 0) {
-        sBox.innerHTML = `<div class="col-span-2 text-center py-8 text-xs text-slate-400">Add items and participants to see the bill summary.</div>`;
+        sBox.innerHTML = `<div class="col-span-2 text-center py-6 text-xs text-slate-400">Add dishes and participants to see the summary cards.</div>`;
         valBox.innerHTML = '';
       } else {
         const sumOfShares = splits.reduce((acc, p) => acc + p.payable, 0);
         const balanced = Math.abs(totals.grandTotal - sumOfShares) < 0.15;
         valBox.innerHTML = balanced
-          ? `<div class="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-semibold">✓ 100% Balanced: Grand Total (₹${totals.grandTotal.toFixed(2)}) matches the sum of individual bills with CGST & SGST included!</div>`
-          : `<div class="p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-semibold">⚠️ Notice: Some dishes are unassigned. Please assign all dishes to balance the bill.</div>`;
+          ? `<div class="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-semibold">✓ 100% Balanced: Grand Total (₹${totals.grandTotal.toFixed(2)}) matches the sum of all individual shares with CGST & SGST included!</div>`
+          : `<div class="p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-semibold">⚠️ Notice: Some dishes are unassigned. Please assign all dishes to balance the bill.</div>`;
 
         sBox.innerHTML = splits.map(p => `
           <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col justify-between">
@@ -1122,12 +801,11 @@
               <div class="flex justify-between items-center pb-2 border-b border-slate-200 mb-2">
                 <div class="font-bold text-sm text-navy-900">${p.name}</div>
                 <div class="text-right">
-                  <div class="text-[10px] text-slate-400 font-bold uppercase">Total Payable</div>
+                  <div class="text-[10px] text-slate-400 font-bold uppercase">Total Share</div>
                   <div class="text-base font-extrabold text-brand">₹${p.payable.toFixed(2)}</div>
                 </div>
               </div>
 
-              <!-- Dishes List -->
               <div class="space-y-1 mb-2">
                 ${p.items.map(i => `
                   <div class="flex justify-between text-[11px] text-slate-600">
@@ -1137,8 +815,7 @@
                 `).join('')}
               </div>
 
-              <!-- Tax & Charges Breakdown per person -->
-              <div class="pt-2 border-t border-slate-200/80 text-[11px] space-y-0.5 text-slate-500 mb-3">
+              <div class="pt-2 border-t border-slate-200/80 text-[10px] space-y-0.5 text-slate-500 mb-3">
                 <div class="flex justify-between">
                   <span>Food Subtotal:</span>
                   <span class="font-medium text-slate-700">₹${p.foodSubtotal.toFixed(2)}</span>
@@ -1154,42 +831,273 @@
               </div>
             </div>
 
-            <button onclick="downloadIndividualPdf('${p.name}', ${p.foodSubtotal}, ${p.cgstShare}, ${p.sgstShare}, ${p.payable})" class="text-xs font-bold text-brand hover:text-brand-hover bg-brand-light/60 hover:bg-brand-light py-2 rounded-lg text-center transition">
-              📥 Download Individual PDF
-            </button>
+            <div class="flex space-x-2">
+              <button onclick="downloadIndividualPdf('${p.name}', ${p.foodSubtotal}, ${p.cgstShare}, ${p.sgstShare}, ${p.payable})" class="flex-1 text-[11px] font-bold text-brand hover:text-brand-hover bg-brand-light/60 hover:bg-brand-light py-2 rounded-lg text-center transition">
+                📥 Individual PDF
+              </button>
+              <button onclick="switchTab('settlements')" class="text-[11px] font-bold text-white bg-navy-900 hover:bg-slate-800 px-3 py-2 rounded-lg transition">
+                Settle Up 💳
+              </button>
+            </div>
           </div>
         `).join('');
       }
-    }
 
-    function resetAll() {
-      if (confirm('Start a new bill?')) {
-        state = {
-          restaurantName: '',
-          receiptPhotoData: null,
-          receiptFileName: '',
-          rawOcrLines: [],
-          pendingExtractedItems: [],
-          foodItems: [],
-          cgstPercent: 2.5,
-          sgstPercent: 2.5,
-          serviceCharge: 0.0,
-          discount: 0.0,
-          participants: [],
-          splitType: 'EQUAL',
-          assignments: {}
-        };
-        document.getElementById('restaurantInput').value = '';
-        document.getElementById('cgstPercentInput').value = '2.5';
-        document.getElementById('sgstPercentInput').value = '2.5';
-        document.getElementById('serviceChargeInput').value = '0';
-        document.getElementById('discountInput').value = '0';
-        removeReceiptPhoto();
-        renderAll();
+      // Update badge
+      const sBadge = document.getElementById('settlementBadge');
+      if (splits.length > 0) {
+        sBadge.classList.remove('hidden');
+        sBadge.innerText = splits.length;
+      } else {
+        sBadge.classList.add('hidden');
       }
     }
 
-    // PDF Downloads with CGST & SGST breakdown
+    // ════════════════════ SETTLE UP / DEBT LEDGER (SPLITWISE STYLE) ════════════════════
+    function renderSettlementsView() {
+      const splits = calculateSplits();
+      const totals = calculateBillTotals();
+
+      const container = document.getElementById('settlementCardsGrid');
+      if (splits.length === 0) {
+        container.innerHTML = `<div class="text-center py-8 text-xs text-slate-400">Please add dishes and participants in the "New Bill" tab first.</div>`;
+        return;
+      }
+
+      let settledSum = 0;
+      let totalSum = totals.grandTotal;
+
+      container.innerHTML = splits.map(p => {
+        const isPaid = !!p.isPaid;
+        if (isPaid) settledSum += p.payable;
+
+        return `
+          <div class="bg-white border ${isPaid ? 'border-emerald-300 bg-emerald-50/20' : 'border-slate-200'} rounded-2xl p-4 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-all">
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 rounded-xl ${isPaid ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-700'} flex items-center justify-center font-bold text-sm">
+                ${p.name.charAt(0).toUpperCase()}
+              </div>
+              <div>
+                <div class="flex items-center space-x-2">
+                  <span class="font-bold text-sm text-navy-900">${p.name}</span>
+                  <span class="text-xs font-extrabold px-2 py-0.5 rounded-full ${isPaid ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">
+                    ${isPaid ? '✓ Settled' : '⏳ Unsettled'}
+                  </span>
+                </div>
+                <div class="text-xs text-slate-500 mt-0.5">
+                  Share Amount: <span class="font-bold text-navy-900">₹${p.payable.toFixed(2)}</span>
+                  ${p.method ? ` &bull; <span class="text-emerald-700 font-medium">via ${p.method} (${p.settledTime || 'Recorded'})</span>` : ''}
+                </div>
+              </div>
+            </div>
+
+            <div class="flex items-center space-x-2 shrink-0">
+              <div class="text-right mr-2 hidden sm:block">
+                <div class="text-[10px] text-slate-400 font-bold uppercase">Amount</div>
+                <div class="text-base font-extrabold text-navy-900">₹${p.payable.toFixed(2)}</div>
+              </div>
+
+              ${!isPaid ? `
+                <button onclick="openSettleModal('${p.id}', '${p.name}', ${p.payable})" class="bg-navy-900 hover:bg-slate-800 text-white text-xs font-bold px-4 py-2 rounded-xl transition shadow-sm">
+                  Record Payment ✓
+                </button>
+              ` : `
+                <button onclick="resetParticipantPayment('${p.id}')" class="text-xs font-semibold px-3 py-2 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-600 transition">
+                  ↩ Undo Settle
+                </button>
+              `}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Update progress bar
+      const pct = totalSum > 0 ? Math.round((settledSum / totalSum) * 100) : 0;
+      document.getElementById('settlementProgressLabel').innerText = `Settlement Progress: ₹${settledSum.toFixed(2)} / ₹${totalSum.toFixed(2)} (${pct}%)`;
+      document.getElementById('settlementPendingLabel').innerText = `Pending: ₹${Math.max(0, totalSum - settledSum).toFixed(2)}`;
+      document.getElementById('settlementProgressBar').style.width = pct + '%';
+    }
+
+    // Settle Up Modal Handling
+    function openSettleModal(participantId, name, amount) {
+      state.activeSettleId = participantId;
+      document.getElementById('settleParticipantName').innerText = name;
+      document.getElementById('settleAmountLabel').innerText = `Amount to Settle: ₹${amount.toFixed(2)}`;
+      document.getElementById('settleModal').classList.remove('hidden');
+    }
+
+    function closeSettleModal() {
+      state.activeSettleId = null;
+      document.getElementById('settleModal').classList.add('hidden');
+    }
+
+    function confirmSettlePayment() {
+      if (!state.activeSettleId) return;
+
+      const methodRadio = document.querySelector('input[name="payMethod"]:checked');
+      const method = methodRadio ? methodRadio.value : 'Cash';
+      const timeStr = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+
+      state.settlementStatus[state.activeSettleId] = {
+        isPaid: true,
+        method: method,
+        timestamp: timeStr
+      };
+
+      closeSettleModal();
+      renderSettlementsView();
+    }
+
+    function resetParticipantPayment(participantId) {
+      state.settlementStatus[participantId] = { isPaid: false, method: '', timestamp: '' };
+      renderSettlementsView();
+    }
+
+    // ════════════════════ AUTHENTICATION (NAME, USERNAME, EMAIL, PASSWORD) ════════════════════
+    function openAuthModal() {
+      document.getElementById('authModal').classList.remove('hidden');
+    }
+    function closeAuthModal() {
+      document.getElementById('authModal').classList.add('hidden');
+    }
+
+    function setAuthTab(tab) {
+      if (tab === 'login') {
+        document.getElementById('authFormLogin').classList.remove('hidden');
+        document.getElementById('authFormRegister').classList.add('hidden');
+        document.getElementById('authTabLogin').className = 'flex-1 pb-2 text-xs font-bold text-brand border-b-2 border-brand';
+        document.getElementById('authTabRegister').className = 'flex-1 pb-2 text-xs font-bold text-slate-400 hover:text-slate-600';
+      } else {
+        document.getElementById('authFormLogin').classList.add('hidden');
+        document.getElementById('authFormRegister').classList.remove('hidden');
+        document.getElementById('authTabRegister').className = 'flex-1 pb-2 text-xs font-bold text-brand border-b-2 border-brand';
+        document.getElementById('authTabLogin').className = 'flex-1 pb-2 text-xs font-bold text-slate-400 hover:text-slate-600';
+      }
+    }
+
+    function handleRegister() {
+      const fullName = document.getElementById('regFullNameInput').value.trim();
+      const username = document.getElementById('regUsernameInput').value.trim().toLowerCase();
+      const email = document.getElementById('regEmailInput').value.trim();
+      const password = document.getElementById('regPasswordInput').value;
+
+      if (!fullName || !username || !password) {
+        alert("Please enter Full Name, Username, and Password.");
+        return;
+      }
+
+      if (state.registeredUsers.some(u => u.username === username)) {
+        alert("Username already taken! Please choose another.");
+        return;
+      }
+
+      const newUser = {
+        fullName,
+        username,
+        email: email || `${username}@splitbite.dev`,
+        token: 'jwt_token_' + Date.now()
+      };
+
+      state.registeredUsers.push(newUser);
+      localStorage.setItem('splitbite_users_db', JSON.stringify(state.registeredUsers));
+
+      setCurrentUser(newUser);
+      closeAuthModal();
+      alert(`✓ Account created successfully! Signed in as ${newUser.fullName}.`);
+    }
+
+    function handleLogin() {
+      const input = document.getElementById('loginUsernameInput').value.trim().toLowerCase();
+      const password = document.getElementById('loginPasswordInput').value;
+
+      if (!input) {
+        alert("Please enter your username or email.");
+        return;
+      }
+
+      const found = state.registeredUsers.find(u => u.username.toLowerCase() === input || u.email.toLowerCase() === input);
+      if (found) {
+        setCurrentUser(found);
+        closeAuthModal();
+        alert(`✓ Welcome back, ${found.fullName}!`);
+        return;
+      }
+
+      // Dynamic sign-in for any input
+      const anyUser = {
+        fullName: input.charAt(0).toUpperCase() + input.slice(1),
+        username: input,
+        email: `${input}@splitbite.dev`,
+        token: 'jwt_token_' + Date.now()
+      };
+      state.registeredUsers.push(anyUser);
+      localStorage.setItem('splitbite_users_db', JSON.stringify(state.registeredUsers));
+      setCurrentUser(anyUser);
+      closeAuthModal();
+      alert(`✓ Signed in as ${anyUser.fullName}!`);
+    }
+
+    function setCurrentUser(user) {
+      state.currentUser = user;
+      localStorage.setItem('splitbite_logged_user', JSON.stringify(user));
+      updateAuthUI();
+      renderAll();
+    }
+
+    function handleSignOut() {
+      state.currentUser = null;
+      localStorage.removeItem('splitbite_logged_user');
+      updateAuthUI();
+      renderAll();
+      alert("You have signed out.");
+    }
+
+    function updateAuthUI() {
+      const badge = document.getElementById('currentUserBadge');
+      const navBtn = document.getElementById('authNavContainer');
+
+      if (state.currentUser) {
+        badge.innerHTML = `
+          <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          <span class="text-white font-bold">👤 ${state.currentUser.fullName}</span>
+          <span class="text-slate-400">(${state.currentUser.email})</span>
+        `;
+        navBtn.innerHTML = `
+          <button onclick="handleSignOut()" class="ml-2 text-xs font-semibold bg-slate-100 hover:bg-rose-50 text-slate-700 hover:text-rose-600 border border-slate-200 px-3 py-1.5 rounded-xl transition">
+            Sign Out
+          </button>
+        `;
+      } else {
+        badge.innerHTML = `<span>Guest Mode</span>`;
+        navBtn.innerHTML = `
+          <button onclick="openAuthModal()" class="ml-2 text-xs font-semibold bg-emerald-50 text-brand border border-emerald-200 hover:bg-emerald-100 px-3 py-1.5 rounded-xl transition">
+            🔑 Sign In / Sign Up
+          </button>
+        `;
+      }
+    }
+
+    // Reset All State
+    function resetAll() {
+      state.restaurantName = '';
+      state.foodItems = [];
+      state.participants = [];
+      state.assignments = {};
+      state.settlementStatus = {};
+      document.getElementById('restaurantInput').value = '';
+      document.getElementById('itemNameInput').value = '';
+      document.getElementById('itemPriceInput').value = '';
+      document.getElementById('itemQtyInput').value = '1';
+      document.getElementById('cgstPercentInput').value = '2.5';
+      document.getElementById('sgstPercentInput').value = '2.5';
+      document.getElementById('serviceChargeInput').value = '0';
+      document.getElementById('discountInput').value = '0';
+
+      setSplitType('EQUAL');
+      renderAll();
+    }
+
+    // ════════════════════ PDF EXPORTS ════════════════════
     function downloadIndividualPdf(name, foodSub, cgstShare, sgstShare, totalAmount) {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
@@ -1208,7 +1116,7 @@
       doc.text(`Participant: ${name}`, 14, 56);
 
       doc.autoTable({
-        startY: 65,
+        startY: 64,
         head: [['Tax Description', 'Amount']],
         body: [
           ['Food Items Subtotal', `INR ${foodSub.toFixed(2)}`],
@@ -1258,6 +1166,8 @@
       doc.save('SplitBite_Complete_Group_Bill_CGST_SGST.pdf');
     }
 
+    // Init UI
+    updateAuthUI();
     renderAll();
   </script>
 </body>

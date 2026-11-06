@@ -10,8 +10,6 @@ import { Sparkles, Utensils } from 'lucide-react';
 
 export default function App() {
   const [restaurantName, setRestaurantName] = useState('');
-  const [receiptPhotoData, setReceiptPhotoData] = useState(null);
-  const [receiptFileName, setReceiptFileName] = useState('');
   const [foodItems, setFoodItems] = useState([]);
   const [taxPercent, setTaxPercent] = useState('5');
   const [serviceCharge, setServiceCharge] = useState('0');
@@ -59,8 +57,6 @@ export default function App() {
   const handleReset = () => {
     if (window.confirm('Are you sure you want to start a new bill? Current data will be cleared.')) {
       setRestaurantName('');
-      setReceiptPhotoData(null);
-      setReceiptFileName('');
       setFoodItems([]);
       setTaxPercent('5');
       setServiceCharge('0');
@@ -134,14 +130,10 @@ export default function App() {
           </button>
         </div>
 
-        {/* Feature 1: Create Bill (Restaurant, Receipt Photo & Food Items) */}
+        {/* Feature 1: Create Bill (Restaurant & Food Items) */}
         <CreateBillSection
           restaurantName={restaurantName}
           setRestaurantName={setRestaurantName}
-          receiptPhotoData={receiptPhotoData}
-          setReceiptPhotoData={setReceiptPhotoData}
-          receiptFileName={receiptFileName}
-          setReceiptFileName={setReceiptFileName}
           foodItems={foodItems}
           setFoodItems={setFoodItems}
           taxPercent={taxPercent}
@@ -182,7 +174,7 @@ export default function App() {
             <Utensils className="w-3.5 h-3.5 text-brand" />
             <span>SplitBite</span>
           </div>
-          <p>Full Stack Project with GST Splitting & Receipt Photo Support</p>
+          <p>Full Stack Project with GST Splitting & PDF Export Support</p>
           <p className="text-slate-400">&copy; {new Date().getFullYear()} SplitBite</p>
         </div>
       </footer>

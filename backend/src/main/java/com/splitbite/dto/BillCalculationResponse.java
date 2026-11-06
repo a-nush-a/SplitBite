@@ -14,6 +14,9 @@ public class BillCalculationResponse {
     private BigDecimal discount;
     private BigDecimal totalBill; // Grand Total
     private String splitType;
+    private String paidBy;
+    private String payerUpiId;
+    private String notes;
     private List<ParticipantBillDTO> participantBills;
 
     public static class ParticipantBillDTO {
@@ -26,6 +29,9 @@ public class BillCalculationResponse {
         private BigDecimal discountShare;
         private BigDecimal subtotal;
         private BigDecimal finalPayable;
+        private boolean isPaid;
+        private String upiPaymentUri;
+        private String upiQrBase64;
 
         public String getParticipantId() { return participantId; }
         public void setParticipantId(String participantId) { this.participantId = participantId; }
@@ -53,6 +59,15 @@ public class BillCalculationResponse {
 
         public BigDecimal getFinalPayable() { return finalPayable; }
         public void setFinalPayable(BigDecimal finalPayable) { this.finalPayable = finalPayable; }
+
+        public boolean isPaid() { return isPaid; }
+        public void setPaid(boolean paid) { isPaid = paid; }
+
+        public String getUpiPaymentUri() { return upiPaymentUri; }
+        public void setUpiPaymentUri(String upiPaymentUri) { this.upiPaymentUri = upiPaymentUri; }
+
+        public String getUpiQrBase64() { return upiQrBase64; }
+        public void setUpiQrBase64(String upiQrBase64) { this.upiQrBase64 = upiQrBase64; }
     }
 
     public static class AssignedItemDTO {
@@ -116,6 +131,15 @@ public class BillCalculationResponse {
 
     public String getSplitType() { return splitType; }
     public void setSplitType(String splitType) { this.splitType = splitType; }
+
+    public String getPaidBy() { return paidBy; }
+    public void setPaidBy(String paidBy) { this.paidBy = paidBy; }
+
+    public String getPayerUpiId() { return payerUpiId; }
+    public void setPayerUpiId(String payerUpiId) { this.payerUpiId = payerUpiId; }
+
+    public String getNotes() { return notes; }
+    public void setNotes(String notes) { this.notes = notes; }
 
     public List<ParticipantBillDTO> getParticipantBills() { return participantBills; }
     public void setParticipantBills(List<ParticipantBillDTO> participantBills) { this.participantBills = participantBills; }

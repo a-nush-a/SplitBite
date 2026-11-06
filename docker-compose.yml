@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: splitbite-mysql
+    restart: always
+    environment:
+      MYSQL_DATABASE: splitbite_db
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Spring Boot Backend
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: splitbite-backend
+    restart: on-failure
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/splitbite_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      SPLITBITE_JWT_SECRET: dGhpc0lzQVZlcnlTZWN1cmVLM2V5Rm9yU3BsaXRCaXRlSldUQXBwbGljYXRpb25Ub2tlbkdlbmVyYXRpb25CYXNlNjQ=
+    ports:
+      - "8080:8080"
+
+volumes:
+  mysql_data:
