@@ -1,0 +1,34 @@
+# Node & Frontend
+node_modules/
+dist/
+dist-ssr/
+*.local
+.env
+.env.*
+
+# Java & Backend
+target/
+*.class
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# Eclipse & IntelliJ IDE
+.classpath
+.project
+.settings/
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# OS Specific
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.log

@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SplitBite – Smart Restaurant Bill Splitting</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- jsPDF & AutoTable for instant PDF downloads -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+  <!-- Plus Jakarta Sans Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            offwhite: '#f8fafc',
+            navy: { 900: '#0f172a', 800: '#1e293b', 700: '#334155' },
+            brand: { DEFAULT: '#10b981', hover: '#059669', light: '#d1fae5' }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; color: #0f172a; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- Navigation Bar -->
+  <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm">
+    <div class="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-brand text-white flex items-center justify-center font-bold text-xl shadow-md shadow-brand/20">
+          🍽️
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <span class="text-xl font-bold text-navy-900 tracking-tight">SplitBite</span>
+            <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-brand-light text-brand-hover">v1.1</span>
+          </div>
+          <p class="text-xs text-slate-500 hidden sm:block">Smart Restaurant Bill Splitting with GST & Receipt Upload</p>
+        </div>
+      </div>
+      <button onclick="resetAll()" class="text-xs font-semibold text-slate-600 hover:text-navy-900 bg-slate-100 hover:bg-slate-200 px-3 py-2 rounded-lg transition">
+        🔄 New Bill
+      </button>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="pt-8 pb-10 border-b border-slate-200 bg-gradient-to-b from-white to-offwhite text-center px-4">
+    <div class="max-w-3xl mx-auto">
+      <div class="inline-block px-3 py-1 rounded-full bg-brand-light text-brand-hover text-xs font-semibold mb-3">
+        ✓ Real-World: Itemized Split + Proportional GST & Tax Distribution
+      </div>
+      <h1 class="text-3xl sm:text-5xl font-extrabold text-navy-900 tracking-tight mb-3">
+        Fair Bill Splitting with <span class="text-brand">GST & Taxes Included</span>
+      </h1>
+      <p class="text-slate-600 text-sm sm:text-base max-w-xl mx-auto mb-6">
+        Upload your receipt photo, enter dishes, add GST/tax percentages, tag your friends, and download individual PDF bills with tax breakdowns.
+      </p>
+      <button onclick="loadSampleData()" class="inline-flex items-center space-x-2 bg-brand hover:bg-brand-hover text-white text-xs font-bold px-5 py-2.5 rounded-xl shadow-md transition">
+        <span>✨ Load Sample Bill with 5% GST</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- Main Content -->
+  <main class="flex-1 max-w-4xl w-full mx-auto px-4 py-8">
+
+    <!-- Section 1: Restaurant Info & Receipt Photo Upload -->
+    <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm mb-8">
+      <div class="flex items-center space-x-3 mb-6 pb-4 border-b border-slate-100">
+        <div class="w-9 h-9 rounded-xl bg-emerald-50 text-brand flex items-center justify-center font-bold text-base">1</div>
+        <div>
+          <h2 class="text-lg font-bold text-navy-900">Restaurant Info & Bill Photo</h2>
+          <p class="text-xs text-slate-500">Enter restaurant name and optionally attach a photo of your paper bill</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-600 mb-1.5">Restaurant Name</label>
+          <input type="text" id="restaurantInput" placeholder="e.g. Olive Garden, Spice Haven..." oninput="renderAll()"
+                 class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-brand text-sm">
+        </div>
+
+        <!-- Receipt Photo Upload -->
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-600 mb-1.5">
+            📷 Bill Photo (Optional Reference)
+          </label>
+          <div class="flex items-center space-x-2">
+            <input type="file" id="receiptFileInput" accept="image/*" onchange="handleReceiptUpload(event)"
+                   class="block w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-brand-light file:text-brand-hover hover:file:bg-emerald-100 cursor-pointer">
+          </div>
+        </div>
+      </div>
+
+      <!-- Receipt Preview Banner if uploaded -->
+      <div id="receiptPreviewBox" class="hidden mb-5 p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+          <img id="receiptImageThumb" src="" alt="Receipt Preview" class="w-12 h-12 object-cover rounded-lg border border-slate-200">
+          <div>
+            <div class="text-xs font-bold text-navy-900">Attached Bill Photo</div>
+            <div id="receiptFileName" class="text-[11px] text-slate-500">receipt.jpg</div>
+          </div>
+        </div>
+        <button onclick="removeReceiptPhoto()" class="text-xs font-semibold text-rose-500 hover:text-rose-700 px-3 py-1 bg-white border border-rose-200 rounded-lg">
+          Remove
+        </button>
+      </div>
+
+      <!-- Add Food Item Form -->
+      <form onsubmit="addFoodItem(event)" class="bg-slate-50 p-4 rounded-xl border border-slate-200 mb-5">
+        <div class="text-xs font-bold text-navy-900 uppercase tracking-wider mb-2.5">Add Food Item</div>
+        <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
+          <input type="text" id="itemNameInput" placeholder="Item name (e.g. Chicken Biryani)" class="sm:col-span-6 px-3 py-2 rounded-lg border border-slate-200 text-sm bg-white" required>
+          <input type="number" id="itemPriceInput" step="0.01" min="0" placeholder="Price (₹)" class="sm:col-span-3 px-3 py-2 rounded-lg border border-slate-200 text-sm bg-white" required>
+          <div class="sm:col-span-3 flex space-x-2">
+            <input type="number" id="itemQtyInput" min="1" value="1" class="w-16 px-2 py-2 rounded-lg border border-slate-200 text-sm text-center bg-white" required>
+            <button type="submit" class="flex-1 bg-brand hover:bg-brand-hover text-white text-xs font-bold rounded-lg py-2 transition">+ Add</button>
+          </div>
+        </div>
+      </form>
+
+      <!-- Items Table -->
+      <div id="itemsTableContainer" class="overflow-x-auto rounded-xl border border-slate-200 mb-5">
+        <!-- Rendered by JS -->
+      </div>
+
+      <!-- GST, Taxes & Additional Charges Box -->
+      <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 mb-5">
+        <div class="text-xs font-bold text-navy-900 uppercase tracking-wider mb-3 flex items-center space-x-1.5">
+          <span>🧾 Taxes & Extra Charges (GST / Service Charge / Discount)</span>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-600 mb-1">GST / Tax (%)</label>
+            <div class="relative">
+              <input type="number" id="taxPercentInput" value="5" min="0" max="100" step="0.1" oninput="renderAll()"
+                     placeholder="e.g. 5" class="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white text-sm font-semibold text-navy-900">
+              <span class="absolute right-3 top-2 text-xs font-bold text-slate-400">%</span>
+            </div>
+            <p class="text-[10px] text-slate-400 mt-1">Standard restaurant GST is 5%</p>
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-600 mb-1">Service Charge / Tip (₹)</label>
+            <input type="number" id="serviceChargeInput" value="0" min="0" step="1" oninput="renderAll()"
+                   placeholder="0.00" class="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white text-sm font-semibold text-navy-900">
+            <p class="text-[10px] text-slate-400 mt-1">Optional fixed service amount</p>
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-600 mb-1">Discount (₹)</label>
+            <input type="number" id="discountInput" value="0" min="0" step="1" oninput="renderAll()"
+                   placeholder="0.00" class="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white text-sm font-semibold text-navy-900">
+            <p class="text-[10px] text-slate-400 mt-1">Coupons or bill discount</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Total Breakdown Banner -->
+      <div class="p-4 rounded-xl bg-navy-900 text-white space-y-2">
+        <div class="flex justify-between text-xs text-slate-300">
+          <span>Food Items Subtotal:</span>
+          <span id="foodSubtotalDisplay" class="font-bold text-white">₹0.00</span>
+        </div>
+        <div class="flex justify-between text-xs text-slate-300">
+          <span id="taxRateLabel">GST / Tax (5%):</span>
+          <span id="taxAmountDisplay" class="font-bold text-emerald-300">+₹0.00</span>
+        </div>
+        <div id="serviceChargeRow" class="hidden flex justify-between text-xs text-slate-300">
+          <span>Service Charge / Tip:</span>
+          <span id="serviceChargeDisplay" class="font-bold text-emerald-300">+₹0.00</span>
+        </div>
+        <div id="discountRow" class="hidden flex justify-between text-xs text-slate-300">
+          <span>Discount:</span>
+          <span id="discountDisplay" class="font-bold text-rose-300">-₹0.00</span>
+        </div>
+        <div class="pt-2 border-t border-slate-700 flex justify-between items-center">
+          <div>
+            <div class="text-xs font-bold text-slate-300 uppercase">Grand Total Payable</div>
+            <div id="itemCountLabel" class="text-[11px] text-slate-400">0 items</div>
+          </div>
+          <div id="grandTotalDisplay" class="text-2xl font-extrabold text-brand">₹0.00</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 2: Participants -->
+    <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm mb-8">
+      <div class="flex items-center space-x-3 mb-6 pb-4 border-b border-slate-100">
+        <div class="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-base">2</div>
+        <div>
+          <h2 class="text-lg font-bold text-navy-900">Participants</h2>
+          <p class="text-xs text-slate-500">Add the people who shared this meal</p>
+        </div>
+      </div>
+
+      <form onsubmit="addParticipant(event)" class="flex space-x-2 mb-4">
+        <input type="text" id="participantInput" placeholder="Participant name (e.g. Rahul, Sneha...)" class="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-sm" required>
+        <button type="submit" class="bg-navy-900 hover:bg-slate-800 text-white text-xs font-bold px-5 py-2.5 rounded-xl transition">+ Add Person</button>
+      </form>
+
+      <div id="participantsList" class="flex flex-wrap gap-2">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+
+    <!-- Section 3: Splitting Method -->
+    <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm mb-8">
+      <div class="flex items-center space-x-3 mb-6 pb-4 border-b border-slate-100">
+        <div class="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold text-base">3</div>
+        <div>
+          <h2 class="text-lg font-bold text-navy-900">Choose Splitting Method</h2>
+          <p class="text-xs text-slate-500">Divide equally or assign specific food items to people</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+        <button type="button" onclick="setSplitType('EQUAL')" id="btnEqual" class="p-4 rounded-xl border-2 text-left transition border-brand bg-emerald-50/40 ring-1 ring-brand">
+          <div class="text-sm font-bold text-navy-900 mb-1">Equal Bill Splitting</div>
+          <div class="text-xs text-slate-500">Food subtotal + GST divided equally among all friends.</div>
+        </button>
+        <button type="button" onclick="setSplitType('INDIVIDUAL')" id="btnIndividual" class="p-4 rounded-xl border-2 text-left transition border-slate-200 bg-white">
+          <div class="text-sm font-bold text-navy-900 mb-1">Individual Food Assignment</div>
+          <div class="text-xs text-slate-500">Tag who ate what dish. GST is shared proportionally to what each person ate!</div>
+        </button>
+      </div>
+
+      <!-- Assignment UI -->
+      <div id="assignmentContainer" class="hidden pt-4 border-t border-slate-200 space-y-3">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+
+    <!-- Section 4: Bill Summary & PDF Download -->
+    <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm mb-12">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-200 mb-6 gap-3">
+        <div class="flex items-center space-x-3">
+          <div class="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center font-bold text-base">4</div>
+          <div>
+            <h2 class="text-lg font-bold text-navy-900">Individual Bill Summary (GST Included)</h2>
+            <p id="summarySubtitle" class="text-xs text-slate-500">Itemized dishes + proportional tax share for each friend</p>
+          </div>
+        </div>
+        <button onclick="downloadAllBillsPdf()" class="bg-navy-900 hover:bg-slate-800 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition">
+          📥 Download All Bills (Combined PDF)
+        </button>
+      </div>
+
+      <div id="validationBanner" class="mb-4"></div>
+      <div id="summaryCardsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="border-t border-slate-200 bg-white py-4 text-center text-xs text-slate-500">
+    SplitBite &bull; Full Stack Project with GST Splitting & Receipt Photo &bull; © 2026
+  </footer>
+
+  <!-- Application Logic -->
+  <script>
+    let state = {
+      restaurantName: '',
+      receiptPhotoData: null,
+      receiptFileName: '',
+      foodItems: [],
+      taxPercent: 5.0,
+      serviceCharge: 0.0,
+      discount: 0.0,
+      participants: [],
+      splitType: 'EQUAL',
+      assignments: {} // itemId -> [participantId, ...]
+    };
+
+    function handleReceiptUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        state.receiptPhotoData = event.target.result;
+        state.receiptFileName = file.name;
+        document.getElementById('receiptImageThumb').src = event.target.result;
+        document.getElementById('receiptFileName').innerText = file.name;
+        document.getElementById('receiptPreviewBox').classList.remove('hidden');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function removeReceiptPhoto() {
+      state.receiptPhotoData = null;
+      state.receiptFileName = '';
+      document.getElementById('receiptFileInput').value = '';
+      document.getElementById('receiptPreviewBox').classList.add('hidden');
+    }
+
+    function addFoodItem(e) {
+      e.preventDefault();
+      const name = document.getElementById('itemNameInput').value.trim();
+      const price = parseFloat(document.getElementById('itemPriceInput').value);
+      const qty = parseInt(document.getElementById('itemQtyInput').value, 10);
+      if (!name || isNaN(price) || price <= 0 || isNaN(qty) || qty < 1) return;
+
+      const newItem = {
+        id: 'item_' + Date.now(),
+        name,
+        price,
+        quantity: qty
+      };
+      state.foodItems.push(newItem);
+      document.getElementById('itemNameInput').value = '';
+      document.getElementById('itemPriceInput').value = '';
+      document.getElementById('itemQtyInput').value = '1';
+      renderAll();
+    }
+
+    function removeItem(id) {
+      state.foodItems = state.foodItems.filter(i => i.id !== id);
+      delete state.assignments[id];
+      renderAll();
+    }
+
+    function addParticipant(e) {
+      e.preventDefault();
+      const name = document.getElementById('participantInput').value.trim();
+      if (!name) return;
+      if (state.participants.some(p => p.name.toLowerCase() === name.toLowerCase())) {
+        alert('Participant with this name already exists.');
+        return;
+      }
+      state.participants.push({ id: 'p_' + Date.now(), name });
+      document.getElementById('participantInput').value = '';
+      renderAll();
+    }
+
+    function removeParticipant(id) {
+      state.participants = state.participants.filter(p => p.id !== id);
+      for (let k in state.assignments) {
+        state.assignments[k] = state.assignments[k].filter(pId => pId !== id);
+      }
+      renderAll();
+    }
+
+    function setSplitType(type) {
+      state.splitType = type;
+      document.getElementById('btnEqual').className = type === 'EQUAL'
+        ? 'p-4 rounded-xl border-2 text-left transition border-brand bg-emerald-50/40 ring-1 ring-brand'
+        : 'p-4 rounded-xl border-2 text-left transition border-slate-200 bg-white';
+      document.getElementById('btnIndividual').className = type === 'INDIVIDUAL'
+        ? 'p-4 rounded-xl border-2 text-left transition border-brand bg-emerald-50/40 ring-1 ring-brand'
+        : 'p-4 rounded-xl border-2 text-left transition border-slate-200 bg-white';
+      document.getElementById('assignmentContainer').className = type === 'INDIVIDUAL' ? 'pt-4 border-t border-slate-200 space-y-3' : 'hidden';
+      renderAll();
+    }
+
+    function toggleAssignment(itemId, pId) {
+      let current = state.assignments[itemId] || [];
+      if (current.includes(pId)) {
+        state.assignments[itemId] = current.filter(id => id !== pId);
+      } else {
+        state.assignments[itemId] = [...current, pId];
+      }
+      renderAll();
+    }
+
+    function toggleSelectAllForDish(itemId) {
+      let allIds = state.participants.map(p => p.id);
+      let current = state.assignments[itemId] || [];
+      state.assignments[itemId] = current.length === allIds.length ? [] : allIds;
+      renderAll();
+    }
+
+    function calculateFoodSubtotal() {
+      return state.foodItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    }
+
+    function calculateBillTotals() {
+      const foodSubtotal = calculateFoodSubtotal();
+      const taxPercent = parseFloat(document.getElementById('taxPercentInput').value) || 0;
+      const serviceCharge = parseFloat(document.getElementById('serviceChargeInput').value) || 0;
+      const discount = parseFloat(document.getElementById('discountInput').value) || 0;
+
+      const taxAmount = (foodSubtotal * taxPercent) / 100;
+      const grandTotal = Math.max(0, foodSubtotal + taxAmount + serviceCharge - discount);
+
+      return {
+        foodSubtotal: Number(foodSubtotal.toFixed(2)),
+        taxPercent,
+        taxAmount: Number(taxAmount.toFixed(2)),
+        serviceCharge: Number(serviceCharge.toFixed(2)),
+        discount: Number(discount.toFixed(2)),
+        grandTotal: Number(grandTotal.toFixed(2))
+      };
+    }
+
+    function calculateSplits() {
+      const totals = calculateBillTotals();
+      const { foodSubtotal, taxAmount, serviceCharge, discount, grandTotal } = totals;
+      if (state.participants.length === 0) return [];
+
+      // 1. EQUAL SPLIT
+      if (state.splitType === 'EQUAL') {
+        const rawShare = grandTotal / state.participants.length;
+        const foodPortion = foodSubtotal / state.participants.length;
+        const taxPortion = taxAmount / state.participants.length;
+        const svcPortion = serviceCharge / state.participants.length;
+        const discPortion = discount / state.participants.length;
+
+        let running = 0;
+        return state.participants.map((p, idx) => {
+          let myShare = (idx === state.participants.length - 1) ? Number((grandTotal - running).toFixed(2)) : Number(rawShare.toFixed(2));
+          running += myShare;
+          return {
+            id: p.id,
+            name: p.name,
+            items: state.foodItems.map(i => ({
+              name: i.name,
+              qty: i.quantity,
+              unitPrice: i.price,
+              portion: `1/${state.participants.length}`,
+              cost: Number(((i.price * i.quantity) / state.participants.length).toFixed(2))
+            })),
+            foodSubtotal: Number(foodPortion.toFixed(2)),
+            taxShare: Number(taxPortion.toFixed(2)),
+            serviceShare: Number(svcPortion.toFixed(2)),
+            discountShare: Number(discPortion.toFixed(2)),
+            payable: myShare
+          };
+        });
+      }
+
+      // 2. INDIVIDUAL SPLIT WITH PROPORTIONAL GST
+      const pMap = {};
+      state.participants.forEach(p => {
+        pMap[p.id] = { id: p.id, name: p.name, items: [], foodSubtotal: 0, taxShare: 0, serviceShare: 0, discountShare: 0, payable: 0 };
+      });
+
+      state.foodItems.forEach(item => {
+        const itemTotal = item.price * item.quantity;
+        const assignedIds = state.assignments[item.id] || [];
+        if (assignedIds.length === 0) return;
+        const shareCost = itemTotal / assignedIds.length;
+        assignedIds.forEach(pId => {
+          if (pMap[pId]) {
+            pMap[pId].items.push({
+              name: item.name,
+              qty: item.quantity,
+              unitPrice: item.price,
+              portion: assignedIds.length > 1 ? `1/${assignedIds.length}` : '1/1',
+              cost: Number(shareCost.toFixed(2))
+            });
+            pMap[pId].foodSubtotal += shareCost;
+          }
+        });
+      });
+
+      // Calculate total food consumed by all participants
+      const totalAssignedFood = Object.values(pMap).reduce((sum, p) => sum + p.foodSubtotal, 0);
+
+      // Distribute taxes & charges proportionally based on each person's food consumption!
+      let runningSum = 0;
+      const resultList = Object.values(pMap);
+
+      resultList.forEach((p, idx) => {
+        const ratio = totalAssignedFood > 0 ? (p.foodSubtotal / totalAssignedFood) : (1 / resultList.length);
+        const myTax = Number((taxAmount * ratio).toFixed(2));
+        const myService = Number((serviceCharge * ratio).toFixed(2));
+        const myDiscount = Number((discount * ratio).toFixed(2));
+
+        p.taxShare = myTax;
+        p.serviceShare = myService;
+        p.discountShare = myDiscount;
+
+        let totalForPerson = Number((p.foodSubtotal + myTax + myService - myDiscount).toFixed(2));
+        p.payable = totalForPerson;
+      });
+
+      return resultList.map(p => ({
+        ...p,
+        foodSubtotal: Number(p.foodSubtotal.toFixed(2)),
+        payable: Number(p.payable.toFixed(2))
+      }));
+    }
+
+    function renderAll() {
+      state.restaurantName = document.getElementById('restaurantInput').value;
+      const totals = calculateBillTotals();
+
+      document.getElementById('foodSubtotalDisplay').innerText = `₹${totals.foodSubtotal.toFixed(2)}`;
+      document.getElementById('taxRateLabel').innerText = `GST / Tax (${totals.taxPercent}%):`;
+      document.getElementById('taxAmountDisplay').innerText = `+₹${totals.taxAmount.toFixed(2)}`;
+      document.getElementById('grandTotalDisplay').innerText = `₹${totals.grandTotal.toFixed(2)}`;
+      document.getElementById('itemCountLabel').innerText = `${state.foodItems.length} item(s) listed`;
+
+      // Service charge & Discount rows visibility
+      const svcRow = document.getElementById('serviceChargeRow');
+      const discRow = document.getElementById('discountRow');
+      if (totals.serviceCharge > 0) {
+        svcRow.classList.remove('hidden');
+        document.getElementById('serviceChargeDisplay').innerText = `+₹${totals.serviceCharge.toFixed(2)}`;
+      } else {
+        svcRow.classList.add('hidden');
+      }
+      if (totals.discount > 0) {
+        discRow.classList.remove('hidden');
+        document.getElementById('discountDisplay').innerText = `-₹${totals.discount.toFixed(2)}`;
+      } else {
+        discRow.classList.add('hidden');
+      }
+
+      // Render Food Items Table
+      const tableBox = document.getElementById('itemsTableContainer');
+      if (state.foodItems.length === 0) {
+        tableBox.innerHTML = `<div class="p-6 text-center text-xs text-slate-400">No items added yet.</div>`;
+      } else {
+        let rows = state.foodItems.map((item, idx) => `
+          <tr class="border-b border-slate-100 hover:bg-slate-50 text-xs">
+            <td class="p-3 text-slate-400">${idx + 1}</td>
+            <td class="p-3 font-semibold text-navy-900">${item.name}</td>
+            <td class="p-3 text-right text-slate-600">₹${item.price.toFixed(2)}</td>
+            <td class="p-3 text-center font-bold">${item.quantity}</td>
+            <td class="p-3 text-right font-bold text-navy-900">₹${(item.price * item.quantity).toFixed(2)}</td>
+            <td class="p-3 text-center">
+              <button onclick="removeItem('${item.id}')" class="text-slate-400 hover:text-rose-500 font-bold px-2 py-1">✕</button>
+            </td>
+          </tr>
+        `).join('');
+        tableBox.innerHTML = `
+          <table class="w-full text-left">
+            <thead>
+              <tr class="bg-slate-100 text-[11px] font-bold text-slate-600 uppercase">
+                <th class="p-3">#</th><th class="p-3">Item</th><th class="p-3 text-right">Price</th>
+                <th class="p-3 text-center">Qty</th><th class="p-3 text-right">Subtotal</th><th class="p-3 text-center">Action</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>`;
+      }
+
+      // Render Participants
+      const pBox = document.getElementById('participantsList');
+      if (state.participants.length === 0) {
+        pBox.innerHTML = `<div class="text-xs text-slate-400 italic">No participants added yet.</div>`;
+      } else {
+        pBox.innerHTML = state.participants.map(p => `
+          <div class="inline-flex items-center space-x-1.5 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl text-xs font-semibold text-navy-900">
+            <span class="w-5 h-5 rounded-full bg-brand/20 text-brand-hover text-[10px] flex items-center justify-center font-bold">${p.name.charAt(0).toUpperCase()}</span>
+            <span>${p.name}</span>
+            <button onclick="removeParticipant('${p.id}')" class="text-slate-400 hover:text-rose-500 ml-1">✕</button>
+          </div>
+        `).join('');
+      }
+
+      // Render Assignments
+      const aBox = document.getElementById('assignmentContainer');
+      if (state.splitType === 'INDIVIDUAL') {
+        if (state.foodItems.length === 0 || state.participants.length === 0) {
+          aBox.innerHTML = `<div class="text-xs text-amber-700 bg-amber-50 p-3 rounded-lg">Please add items and participants first.</div>`;
+        } else {
+          aBox.innerHTML = state.foodItems.map(item => {
+            const assigned = state.assignments[item.id] || [];
+            const itemTotal = item.price * item.quantity;
+            const pills = state.participants.map(p => {
+              const sel = assigned.includes(p.id);
+              return `<button onclick="toggleAssignment('${item.id}', '${p.id}')" class="px-2.5 py-1 rounded-lg text-xs font-semibold ${sel ? 'bg-brand text-white' : 'bg-white border border-slate-200 text-slate-600'}">${p.name}</button>`;
+            }).join(' ');
+
+            return `
+              <div class="p-3 rounded-xl border border-slate-200 bg-slate-50/50">
+                <div class="flex justify-between items-center mb-2">
+                  <div class="font-bold text-xs text-navy-900">${item.name} (Qty: ${item.quantity} &bull; ₹${itemTotal.toFixed(2)})</div>
+                  <button onclick="toggleSelectAllForDish('${item.id}')" class="text-[11px] font-semibold text-slate-600 hover:text-navy-900 bg-white border border-slate-200 px-2 py-0.5 rounded">
+                    ${assigned.length === state.participants.length ? 'Deselect All' : 'Shared by All'}
+                  </button>
+                </div>
+                <div class="flex flex-wrap gap-1.5">${pills}</div>
+              </div>`;
+          }).join('');
+        }
+      }
+
+      // Render Summary Cards
+      const splits = calculateSplits();
+      const sBox = document.getElementById('summaryCardsGrid');
+      const valBox = document.getElementById('validationBanner');
+
+      if (splits.length === 0) {
+        sBox.innerHTML = `<div class="col-span-2 text-center py-8 text-xs text-slate-400">Add items and participants to see the bill summary.</div>`;
+        valBox.innerHTML = '';
+      } else {
+        const sumOfShares = splits.reduce((acc, p) => acc + p.payable, 0);
+        const balanced = Math.abs(totals.grandTotal - sumOfShares) < 0.10;
+        valBox.innerHTML = balanced
+          ? `<div class="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-semibold">✓ 100% Balanced: Grand Total (₹${totals.grandTotal.toFixed(2)}) matches the sum of individual bills with GST included!</div>`
+          : `<div class="p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-semibold">⚠️ Notice: Some dishes are unassigned. Please assign all dishes to balance the bill.</div>`;
+
+        sBox.innerHTML = splits.map(p => `
+          <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col justify-between">
+            <div>
+              <div class="flex justify-between items-center pb-2 border-b border-slate-200 mb-2">
+                <div class="font-bold text-sm text-navy-900">${p.name}</div>
+                <div class="text-right">
+                  <div class="text-[10px] text-slate-400 font-bold uppercase">Total Payable</div>
+                  <div class="text-base font-extrabold text-brand">₹${p.payable.toFixed(2)}</div>
+                </div>
+              </div>
+
+              <!-- Dishes List -->
+              <div class="space-y-1 mb-2">
+                ${p.items.map(i => `
+                  <div class="flex justify-between text-[11px] text-slate-600">
+                    <span>${i.name} (${i.portion})</span>
+                    <span class="font-semibold text-navy-900">₹${i.cost.toFixed(2)}</span>
+                  </div>
+                `).join('')}
+              </div>
+
+              <!-- Tax & Charges Breakdown per person -->
+              <div class="pt-2 border-t border-slate-200/80 text-[11px] space-y-0.5 text-slate-500 mb-3">
+                <div class="flex justify-between">
+                  <span>Food Subtotal:</span>
+                  <span class="font-medium text-slate-700">₹${p.foodSubtotal.toFixed(2)}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span>GST Share (${totals.taxPercent}%):</span>
+                  <span class="font-medium text-emerald-600">+₹${p.taxShare.toFixed(2)}</span>
+                </div>
+                ${p.serviceShare > 0 ? `
+                  <div class="flex justify-between">
+                    <span>Service Charge Share:</span>
+                    <span class="font-medium text-emerald-600">+₹${p.serviceShare.toFixed(2)}</span>
+                  </div>` : ''}
+                ${p.discountShare > 0 ? `
+                  <div class="flex justify-between">
+                    <span>Discount Share:</span>
+                    <span class="font-medium text-rose-600">-₹${p.discountShare.toFixed(2)}</span>
+                  </div>` : ''}
+              </div>
+            </div>
+
+            <button onclick="downloadIndividualPdf('${p.name}', ${p.foodSubtotal}, ${p.taxShare}, ${p.payable})" class="text-xs font-bold text-brand hover:text-brand-hover bg-brand-light/60 hover:bg-brand-light py-2 rounded-lg text-center transition">
+              📥 Download Individual PDF
+            </button>
+          </div>
+        `).join('');
+      }
+    }
+
+    function loadSampleData() {
+      state.restaurantName = 'Spice Haven Restaurant';
+      document.getElementById('restaurantInput').value = state.restaurantName;
+      document.getElementById('taxPercentInput').value = '5';
+      document.getElementById('serviceChargeInput').value = '50';
+      document.getElementById('discountInput').value = '0';
+
+      state.foodItems = [
+        { id: 'item_1', name: 'Paneer Butter Masala', price: 260, quantity: 1 },
+        { id: 'item_2', name: 'Butter Garlic Naan', price: 60, quantity: 4 },
+        { id: 'item_3', name: 'Chicken Biryani', price: 320, quantity: 2 },
+        { id: 'item_4', name: 'Fresh Lime Soda', price: 70, quantity: 3 }
+      ];
+      state.participants = [
+        { id: 'p_1', name: 'Rahul' },
+        { id: 'p_2', name: 'Sneha' },
+        { id: 'p_3', name: 'Amal' }
+      ];
+      state.assignments = {
+        item_1: ['p_1', 'p_2'],
+        item_2: ['p_1', 'p_2', 'p_3'],
+        item_3: ['p_1', 'p_3'],
+        item_4: ['p_1', 'p_2', 'p_3']
+      };
+      setSplitType('INDIVIDUAL');
+      renderAll();
+    }
+
+    function resetAll() {
+      if (confirm('Start a new bill?')) {
+        state = {
+          restaurantName: '',
+          receiptPhotoData: null,
+          receiptFileName: '',
+          foodItems: [],
+          taxPercent: 5.0,
+          serviceCharge: 0.0,
+          discount: 0.0,
+          participants: [],
+          splitType: 'EQUAL',
+          assignments: {}
+        };
+        document.getElementById('restaurantInput').value = '';
+        document.getElementById('taxPercentInput').value = '5';
+        document.getElementById('serviceChargeInput').value = '0';
+        document.getElementById('discountInput').value = '0';
+        removeReceiptPhoto();
+        renderAll();
+      }
+    }
+
+    // PDF Downloads with GST breakdown
+    function downloadIndividualPdf(name, foodSub, taxShare, totalAmount) {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      doc.setFillColor(15, 23, 42);
+      doc.rect(0, 0, 210, 35, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(20);
+      doc.text('SplitBite', 14, 18);
+      doc.setFontSize(10);
+      doc.setTextColor(16, 185, 129);
+      doc.text('Smart Restaurant Bill Splitter (GST Included)', 14, 26);
+
+      doc.setTextColor(15, 23, 42);
+      doc.setFontSize(12);
+      doc.text(`Restaurant: ${state.restaurantName || 'Restaurant Bill'}`, 14, 48);
+      doc.text(`Participant: ${name}`, 14, 56);
+
+      doc.autoTable({
+        startY: 65,
+        head: [['Description', 'Amount']],
+        body: [
+          ['Food Items Subtotal', `INR ${foodSub.toFixed(2)}`],
+          [`GST / Tax Share (${document.getElementById('taxPercentInput').value}%)`, `INR ${taxShare.toFixed(2)}`],
+          ['Final Amount Payable', `INR ${totalAmount.toFixed(2)}`]
+        ],
+        theme: 'striped',
+        headStyles: { fillColor: [15, 23, 42] }
+      });
+
+      doc.save(`SplitBite_${name}_Bill_with_GST.pdf`);
+    }
+
+    function downloadAllBillsPdf() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      const splits = calculateSplits();
+      const totals = calculateBillTotals();
+
+      doc.setFillColor(15, 23, 42);
+      doc.rect(0, 0, 210, 38, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(20);
+      doc.text('SplitBite – Master Group Bill', 14, 18);
+      doc.setFontSize(10);
+      doc.setTextColor(16, 185, 129);
+      doc.text(`Restaurant: ${state.restaurantName || 'Restaurant Bill'} | Grand Total: INR ${totals.grandTotal.toFixed(2)}`, 14, 28);
+
+      const rows = splits.map((p, idx) => [
+        idx + 1,
+        p.name,
+        `INR ${p.foodSubtotal.toFixed(2)}`,
+        `INR ${p.taxShare.toFixed(2)}`,
+        `INR ${p.payable.toFixed(2)}`
+      ]);
+
+      doc.autoTable({
+        startY: 48,
+        head: [['#', 'Participant', 'Food Share', 'GST Share', 'Total Payable']],
+        body: rows,
+        theme: 'striped',
+        headStyles: { fillColor: [15, 23, 42] }
+      });
+
+      doc.save('SplitBite_Complete_Group_Bill_GST.pdf');
+    }
+
+    // Initial render
+    renderAll();
+  </script>
+</body>
+</html>
