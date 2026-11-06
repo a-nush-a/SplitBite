@@ -8,12 +8,13 @@ public class BillCalculationRequest {
 
     private String restaurantName;
     private String splitType; // 'EQUAL' or 'INDIVIDUAL'
-    private BigDecimal taxPercent = new BigDecimal("5.0"); // e.g. 5% GST
+    private BigDecimal cgstPercent = new BigDecimal("2.5"); // Indian CGST (default 2.5%)
+    private BigDecimal sgstPercent = new BigDecimal("2.5"); // Indian SGST (default 2.5%)
     private BigDecimal serviceCharge = BigDecimal.ZERO;
     private BigDecimal discount = BigDecimal.ZERO;
     private List<FoodItemInput> foodItems;
     private List<ParticipantInput> participants;
-    private Map<String, List<String>> assignments; // itemId -> list of participantIds
+    private Map<String, List<String>> assignments;
 
     public static class FoodItemInput {
         private String id;
@@ -51,8 +52,11 @@ public class BillCalculationRequest {
     public String getSplitType() { return splitType; }
     public void setSplitType(String splitType) { this.splitType = splitType; }
 
-    public BigDecimal getTaxPercent() { return taxPercent; }
-    public void setTaxPercent(BigDecimal taxPercent) { this.taxPercent = taxPercent; }
+    public BigDecimal getCgstPercent() { return cgstPercent; }
+    public void setCgstPercent(BigDecimal cgstPercent) { this.cgstPercent = cgstPercent; }
+
+    public BigDecimal getSgstPercent() { return sgstPercent; }
+    public void setSgstPercent(BigDecimal sgstPercent) { this.sgstPercent = sgstPercent; }
 
     public BigDecimal getServiceCharge() { return serviceCharge; }
     public void setServiceCharge(BigDecimal serviceCharge) { this.serviceCharge = serviceCharge; }

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SplitBite – Smart Restaurant Bill Splitting with AI OCR</title>
+  <title>SplitBite – Smart Indian Restaurant Bill Splitter (CGST & SGST with AI OCR)</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- jsPDF & AutoTable for instant PDF downloads -->
@@ -44,9 +44,9 @@
         <div>
           <div class="flex items-center space-x-2">
             <span class="text-xl font-bold text-navy-900 tracking-tight">SplitBite</span>
-            <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-brand-light text-brand-hover">AI Scanner v1.2</span>
+            <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-brand-light text-brand-hover">Indian GST v1.3</span>
           </div>
-          <p class="text-xs text-slate-500 hidden sm:block">AI Bill Scanner & Smart Expense Splitter</p>
+          <p class="text-xs text-slate-500 hidden sm:block">Smart Bill Splitting &bull; CGST + SGST &bull; AI OCR</p>
         </div>
       </div>
       <button onclick="resetAll()" class="text-xs font-semibold text-slate-600 hover:text-navy-900 bg-slate-100 hover:bg-slate-200 px-3 py-2 rounded-lg transition">
@@ -59,22 +59,21 @@
   <section class="pt-8 pb-10 border-b border-slate-200 bg-gradient-to-b from-white to-offwhite text-center px-4">
     <div class="max-w-3xl mx-auto">
       <div class="inline-block px-3 py-1 rounded-full bg-brand-light text-brand-hover text-xs font-semibold mb-3">
-        ✨ AI OCR: Upload Receipt &bull; Auto-Extract Dishes &bull; Auto-Calculate GST
+        🇮🇳 Tailored for Indian Restaurant Bills with CGST & SGST
       </div>
       <h1 class="text-3xl sm:text-5xl font-extrabold text-navy-900 tracking-tight mb-3">
-        Upload Receipt Photo & <span class="text-brand">Auto-Extract Everything</span>
+        Scan Bill Photo & <span class="text-brand">Auto-Split CGST & SGST</span>
       </h1>
       <p class="text-slate-600 text-sm sm:text-base max-w-xl mx-auto mb-6">
-        No need to type manually! Upload your paper restaurant bill image — SplitBite will scan the restaurant name, dishes, prices, and GST automatically.
+        Upload your restaurant receipt photo. Our Indian bill OCR engine extracts your real dishes, rates, quantities, and calculates <strong>CGST (2.5%) + SGST (2.5%)</strong> fairly.
       </p>
 
-      <!-- Quick Action Buttons -->
       <div class="flex flex-wrap items-center justify-center gap-3">
         <label for="receiptFileInput" class="cursor-pointer inline-flex items-center space-x-2 bg-brand hover:bg-brand-hover text-white text-xs font-bold px-5 py-3 rounded-xl shadow-md transition transform active:scale-95">
-          <span>📷 Upload Real Receipt Image</span>
+          <span>📷 Upload Your Real Bill Image</span>
         </label>
-        <button onclick="loadSampleReceiptImage()" class="inline-flex items-center space-x-2 bg-navy-900 hover:bg-slate-800 text-white text-xs font-bold px-5 py-3 rounded-xl shadow-md transition">
-          <span>⚡ Try with Sample Receipt Image</span>
+        <button onclick="loadSampleIndianReceipt()" class="inline-flex items-center space-x-2 bg-navy-900 hover:bg-slate-800 text-white text-xs font-bold px-5 py-3 rounded-xl shadow-md transition">
+          <span>🇮🇳 Try Sample Indian Bill (CGST+SGST)</span>
         </button>
       </div>
     </div>
@@ -86,7 +85,7 @@
     <!-- Section 1: AI Receipt Scanner Box -->
     <div class="bg-white rounded-2xl p-6 border-2 border-brand/30 shadow-md mb-8 relative overflow-hidden">
       <div class="absolute top-0 right-0 bg-brand text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-bl-xl">
-        AI OCR Scanner
+        Indian Bill OCR Engine
       </div>
 
       <div class="flex items-center space-x-3 mb-5 pb-4 border-b border-slate-100">
@@ -94,8 +93,8 @@
           📷
         </div>
         <div>
-          <h2 class="text-lg font-bold text-navy-900">Step 1: Upload & Auto-Scan Bill Image</h2>
-          <p class="text-xs text-slate-500">Upload your restaurant paper bill to automatically fill items, prices & GST</p>
+          <h2 class="text-lg font-bold text-navy-900">Step 1: Upload Restaurant Bill Image</h2>
+          <p class="text-xs text-slate-500">Extracts actual dishes, prices, CGST and SGST directly from your uploaded receipt</p>
         </div>
       </div>
 
@@ -107,60 +106,77 @@
           <div class="w-12 h-12 rounded-full bg-emerald-100 text-brand mx-auto mb-3 flex items-center justify-center text-2xl">
             🧾
           </div>
-          <p class="text-sm font-bold text-navy-900 mb-1">Click to browse or drop your restaurant bill photo here</p>
-          <p class="text-xs text-slate-500 mb-4">Supports PNG, JPG, JPEG (Receipts from restaurants, cafes, food courts)</p>
+          <p class="text-sm font-bold text-navy-900 mb-1">Upload your restaurant paper bill photo</p>
+          <p class="text-xs text-slate-500 mb-4">Reads Indian restaurant thermal receipts (Names, Prices, CGST, SGST)</p>
           <label for="receiptFileInput" class="inline-block cursor-pointer bg-white border border-slate-300 hover:border-brand text-navy-900 text-xs font-bold px-4 py-2 rounded-xl shadow-sm transition">
-            Choose Bill Photo
+            Choose Receipt Photo
           </label>
         </div>
 
         <!-- Scanning Progress Indicator -->
         <div id="scanningIndicator" class="hidden py-4">
           <div class="animate-spin w-8 h-8 border-4 border-brand border-t-transparent rounded-full mx-auto mb-3"></div>
-          <p id="scanProgressText" class="text-sm font-bold text-brand animate-pulse">Scanning bill image with AI OCR...</p>
-          <p class="text-xs text-slate-400 mt-1">Reading restaurant name, items, prices, and GST...</p>
+          <p id="scanProgressText" class="text-sm font-bold text-brand animate-pulse">Reading bill with OCR Engine...</p>
+          <p class="text-xs text-slate-400 mt-1">Scanning text lines, dishes, CGST, and SGST...</p>
         </div>
 
         <!-- Scanned Success Banner -->
-        <div id="scannedSuccessBanner" class="hidden mt-4 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-left flex items-start justify-between">
-          <div class="flex items-start space-x-3">
-            <img id="receiptImageThumb" src="" alt="Scanned Receipt" class="w-16 h-20 object-cover rounded-lg border border-slate-200 shadow-sm shrink-0">
-            <div>
-              <div class="text-xs font-bold text-emerald-900 flex items-center space-x-1.5">
-                <span>🎉 Bill Image Scanned Successfully!</span>
+        <div id="scannedSuccessBanner" class="hidden mt-4 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-left">
+          <div class="flex items-start justify-between">
+            <div class="flex items-start space-x-3">
+              <img id="receiptImageThumb" src="" alt="Scanned Receipt" class="w-16 h-20 object-cover rounded-lg border border-slate-200 shadow-sm shrink-0">
+              <div>
+                <div class="text-xs font-bold text-emerald-900 flex items-center space-x-1.5">
+                  <span>🎉 Scanned from Your Receipt!</span>
+                </div>
+                <p id="scannedSummaryText" class="text-xs text-emerald-700 mt-1 font-medium"></p>
+                <div class="flex items-center space-x-2 mt-2">
+                  <button onclick="toggleRawTextModal()" class="text-[11px] font-bold text-brand hover:underline">
+                    📄 View Raw OCR Text
+                  </button>
+                  <span class="text-slate-300">&bull;</span>
+                  <span class="text-[11px] text-slate-500">Edit any dish or price in Section 2 below</span>
+                </div>
               </div>
-              <p id="scannedSummaryText" class="text-xs text-emerald-700 mt-1">Extracted 4 dishes, quantities, and 5% GST automatically.</p>
-              <div class="text-[11px] text-slate-500 mt-1">All items are auto-filled below. You can still edit or add any missing dish!</div>
             </div>
+            <button onclick="removeReceiptPhoto()" class="text-xs text-rose-500 hover:text-rose-700 font-bold px-2 py-1">
+              ✕ Clear
+            </button>
           </div>
-          <button onclick="removeReceiptPhoto()" class="text-xs text-rose-500 hover:text-rose-700 font-bold px-2 py-1">
-            ✕ Clear
-          </button>
         </div>
+      </div>
+
+      <!-- Raw OCR Text Modal (Expandable) -->
+      <div id="rawTextModal" class="hidden mt-4 p-4 rounded-xl bg-slate-900 text-emerald-400 font-mono text-xs overflow-x-auto max-h-48 border border-slate-700">
+        <div class="flex justify-between items-center text-slate-400 border-b border-slate-800 pb-2 mb-2 font-sans font-bold">
+          <span>Raw Text Extracted from Receipt:</span>
+          <button onclick="toggleRawTextModal()" class="text-slate-400 hover:text-white">✕ Close</button>
+        </div>
+        <pre id="rawTextContent" class="whitespace-pre-wrap"></pre>
       </div>
     </div>
 
-    <!-- Section 2: Auto-Filled Restaurant & Items -->
+    <!-- Section 2: Restaurant Details & Food Items Table -->
     <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm mb-8">
       <div class="flex items-center space-x-3 mb-6 pb-4 border-b border-slate-100">
         <div class="w-9 h-9 rounded-xl bg-emerald-50 text-brand flex items-center justify-center font-bold text-base">2</div>
         <div>
-          <h2 class="text-lg font-bold text-navy-900">Extracted Dishes & Restaurant Details</h2>
-          <p class="text-xs text-slate-500">Auto-filled by AI scanner (you can edit or add items if needed)</p>
+          <h2 class="text-lg font-bold text-navy-900">Extracted Dishes & Rates</h2>
+          <p class="text-xs text-slate-500">Directly extracted from your bill. Add or edit any dish as needed.</p>
         </div>
       </div>
 
       <div class="mb-5">
-        <label class="block text-xs font-bold uppercase text-slate-600 mb-1.5">Restaurant Name</label>
-        <input type="text" id="restaurantInput" placeholder="Restaurant Name" oninput="renderAll()"
+        <label class="block text-xs font-bold uppercase text-slate-600 mb-1.5">Restaurant / Hotel Name</label>
+        <input type="text" id="restaurantInput" placeholder="Restaurant Name from bill" oninput="renderAll()"
                class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-brand text-sm font-semibold text-navy-900">
       </div>
 
-      <!-- Add Manual Item Form -->
+      <!-- Add Food Item Form -->
       <form onsubmit="addFoodItem(event)" class="bg-slate-50 p-4 rounded-xl border border-slate-200 mb-5">
-        <div class="text-xs font-bold text-navy-900 uppercase tracking-wider mb-2.5">+ Add Any Extra Dish Manually</div>
+        <div class="text-xs font-bold text-navy-900 uppercase tracking-wider mb-2.5">+ Add / Edit Dish Manually</div>
         <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
-          <input type="text" id="itemNameInput" placeholder="Item name" class="sm:col-span-6 px-3 py-2 rounded-lg border border-slate-200 text-sm bg-white" required>
+          <input type="text" id="itemNameInput" placeholder="Dish name (e.g. Porotta, Beef Fry...)" class="sm:col-span-6 px-3 py-2 rounded-lg border border-slate-200 text-sm bg-white" required>
           <input type="number" id="itemPriceInput" step="0.01" min="0" placeholder="Price (₹)" class="sm:col-span-3 px-3 py-2 rounded-lg border border-slate-200 text-sm bg-white" required>
           <div class="sm:col-span-3 flex space-x-2">
             <input type="number" id="itemQtyInput" min="1" value="1" class="w-16 px-2 py-2 rounded-lg border border-slate-200 text-sm text-center bg-white" required>
@@ -174,34 +190,50 @@
         <!-- Rendered by JS -->
       </div>
 
-      <!-- GST, Taxes & Additional Charges Box -->
+      <!-- Indian Taxes (CGST & SGST) Section -->
       <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 mb-5">
-        <div class="text-xs font-bold text-navy-900 uppercase tracking-wider mb-3">
-          🧾 Scanned Taxes & Charges (GST / Service / Discount)
+        <div class="text-xs font-bold text-navy-900 uppercase tracking-wider mb-3 flex items-center justify-between">
+          <span>🇮🇳 Indian Tax Breakdown (CGST & SGST)</span>
+          <span class="text-[11px] text-slate-500 font-normal">Common in Indian Restaurant Bills</span>
         </div>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+
+        <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+          <!-- CGST -->
           <div>
-            <label class="block text-[11px] font-semibold text-slate-600 mb-1">GST / Tax (%)</label>
+            <label class="block text-[11px] font-semibold text-slate-600 mb-1">Central GST (CGST %)</label>
             <div class="relative">
-              <input type="number" id="taxPercentInput" value="5" min="0" max="100" step="0.1" oninput="renderAll()"
+              <input type="number" id="cgstPercentInput" value="2.5" min="0" max="50" step="0.1" oninput="updateGstTotals()"
                      class="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white text-sm font-semibold text-navy-900">
               <span class="absolute right-3 top-2 text-xs font-bold text-slate-400">%</span>
             </div>
-            <p class="text-[10px] text-slate-400 mt-1">Auto-detected from receipt</p>
+            <p class="text-[10px] text-slate-400 mt-1">Usually 2.5% in Indian restaurants</p>
           </div>
 
+          <!-- SGST -->
           <div>
-            <label class="block text-[11px] font-semibold text-slate-600 mb-1">Service Charge / Tip (₹)</label>
-            <input type="number" id="serviceChargeInput" value="0" min="0" step="1" oninput="renderAll()"
-                   class="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white text-sm font-semibold text-navy-900">
-            <p class="text-[10px] text-slate-400 mt-1">Optional fixed service amount</p>
+            <label class="block text-[11px] font-semibold text-slate-600 mb-1">State GST (SGST %)</label>
+            <div class="relative">
+              <input type="number" id="sgstPercentInput" value="2.5" min="0" max="50" step="0.1" oninput="updateGstTotals()"
+                     class="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white text-sm font-semibold text-navy-900">
+              <span class="absolute right-3 top-2 text-xs font-bold text-slate-400">%</span>
+            </div>
+            <p class="text-[10px] text-slate-400 mt-1">Usually 2.5% in Indian restaurants</p>
           </div>
 
+          <!-- Service Charge / Round Off -->
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-600 mb-1">Service / Round Off (₹)</label>
+            <input type="number" id="serviceChargeInput" value="0" step="0.5" oninput="renderAll()"
+                   placeholder="0.00" class="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white text-sm font-semibold text-navy-900">
+            <p class="text-[10px] text-slate-400 mt-1">Tips or round-off adjustment</p>
+          </div>
+
+          <!-- Discount -->
           <div>
             <label class="block text-[11px] font-semibold text-slate-600 mb-1">Discount (₹)</label>
             <input type="number" id="discountInput" value="0" min="0" step="1" oninput="renderAll()"
-                   class="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white text-sm font-semibold text-navy-900">
-            <p class="text-[10px] text-slate-400 mt-1">Discounts/Coupons deducted</p>
+                   placeholder="0.00" class="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white text-sm font-semibold text-navy-900">
+            <p class="text-[10px] text-slate-400 mt-1">Coupon or discount deducted</p>
           </div>
         </div>
       </div>
@@ -213,11 +245,15 @@
           <span id="foodSubtotalDisplay" class="font-bold text-white">₹0.00</span>
         </div>
         <div class="flex justify-between text-xs text-slate-300">
-          <span id="taxRateLabel">GST / Tax (5%):</span>
-          <span id="taxAmountDisplay" class="font-bold text-emerald-300">+₹0.00</span>
+          <span id="cgstLabel">Central GST (CGST 2.5%):</span>
+          <span id="cgstAmountDisplay" class="font-bold text-emerald-300">+₹0.00</span>
+        </div>
+        <div class="flex justify-between text-xs text-slate-300">
+          <span id="sgstLabel">State GST (SGST 2.5%):</span>
+          <span id="sgstAmountDisplay" class="font-bold text-emerald-300">+₹0.00</span>
         </div>
         <div id="serviceChargeRow" class="hidden flex justify-between text-xs text-slate-300">
-          <span>Service Charge / Tip:</span>
+          <span>Service Charge / Round Off:</span>
           <span id="serviceChargeDisplay" class="font-bold text-emerald-300">+₹0.00</span>
         </div>
         <div id="discountRow" class="hidden flex justify-between text-xs text-slate-300">
@@ -240,12 +276,12 @@
         <div class="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-base">3</div>
         <div>
           <h2 class="text-lg font-bold text-navy-900">Add Participants (Friends)</h2>
-          <p class="text-xs text-slate-500">Who shared this meal? Add their names below</p>
+          <p class="text-xs text-slate-500">Add the people who shared this meal</p>
         </div>
       </div>
 
       <form onsubmit="addParticipant(event)" class="flex space-x-2 mb-4">
-        <input type="text" id="participantInput" placeholder="Friend name (e.g. Rahul, Sneha, Amal...)" class="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-sm" required>
+        <input type="text" id="participantInput" placeholder="Friend's name (e.g. Rahul, Sneha, Amal...)" class="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-sm" required>
         <button type="submit" class="bg-navy-900 hover:bg-slate-800 text-white text-xs font-bold px-5 py-2.5 rounded-xl transition">+ Add Person</button>
       </form>
 
@@ -260,18 +296,18 @@
         <div class="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold text-base">4</div>
         <div>
           <h2 class="text-lg font-bold text-navy-900">Choose Splitting Method</h2>
-          <p class="text-xs text-slate-500">Divide equally or tag who ate which dish</p>
+          <p class="text-xs text-slate-500">Divide equally or assign specific food items to people</p>
         </div>
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
         <button type="button" onclick="setSplitType('EQUAL')" id="btnEqual" class="p-4 rounded-xl border-2 text-left transition border-brand bg-emerald-50/40 ring-1 ring-brand">
           <div class="text-sm font-bold text-navy-900 mb-1">Equal Bill Splitting</div>
-          <div class="text-xs text-slate-500">Food subtotal + GST divided equally among everyone.</div>
+          <div class="text-xs text-slate-500">Food subtotal + CGST + SGST divided equally among everyone.</div>
         </button>
         <button type="button" onclick="setSplitType('INDIVIDUAL')" id="btnIndividual" class="p-4 rounded-xl border-2 text-left transition border-slate-200 bg-white">
           <div class="text-sm font-bold text-navy-900 mb-1">Individual Food Assignment</div>
-          <div class="text-xs text-slate-500">Tag who ate what dish. GST is split proportionally to what each person ate!</div>
+          <div class="text-xs text-slate-500">Tag who ate what dish. CGST & SGST are split proportionally to what each person ate!</div>
         </button>
       </div>
 
@@ -287,7 +323,7 @@
         <div class="flex items-center space-x-3">
           <div class="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center font-bold text-base">5</div>
           <div>
-            <h2 class="text-lg font-bold text-navy-900">Individual Bill Summary (GST Included)</h2>
+            <h2 class="text-lg font-bold text-navy-900">Individual Bill Summary (CGST & SGST Included)</h2>
             <p id="summarySubtitle" class="text-xs text-slate-500">Itemized dishes + proportional tax share for each friend</p>
           </div>
         </div>
@@ -305,17 +341,19 @@
   </main>
 
   <footer class="border-t border-slate-200 bg-white py-4 text-center text-xs text-slate-500">
-    SplitBite &bull; Full Stack AI Bill Splitter with OCR & GST Support &bull; © 2026
+    SplitBite &bull; Full Stack AI Bill Splitter with Indian CGST & SGST Support &bull; © 2026
   </footer>
 
-  <!-- Application Logic & OCR Scanner -->
+  <!-- Application Logic & Indian OCR Parser -->
   <script>
     let state = {
       restaurantName: '',
       receiptPhotoData: null,
       receiptFileName: '',
+      rawOcrText: '',
       foodItems: [],
-      taxPercent: 5.0,
+      cgstPercent: 2.5,
+      sgstPercent: 2.5,
       serviceCharge: 0.0,
       discount: 0.0,
       participants: [],
@@ -323,7 +361,18 @@
       assignments: {}
     };
 
-    // Handle Image Upload & Run OCR
+    function updateGstTotals() {
+      state.cgstPercent = parseFloat(document.getElementById('cgstPercentInput').value) || 0;
+      state.sgstPercent = parseFloat(document.getElementById('sgstPercentInput').value) || 0;
+      renderAll();
+    }
+
+    function toggleRawTextModal() {
+      const modal = document.getElementById('rawTextModal');
+      modal.classList.toggle('hidden');
+    }
+
+    // Handle Image Upload & Preprocessing for Sharp OCR
     async function handleReceiptSelected(e) {
       const file = e.target.files[0];
       if (!file) return;
@@ -339,19 +388,55 @@
         document.getElementById('scannedSuccessBanner').classList.add('hidden');
 
         try {
-          // Perform OCR extraction
-          await runOcrOnImage(event.target.result, file.name);
+          // Preprocess image on canvas (high contrast for thermal paper)
+          const enhancedImage = await enhanceImageForOcr(event.target.result);
+          await runOcrOnImage(enhancedImage, file.name);
         } catch (err) {
-          console.warn("OCR library notice, falling back to smart parser:", err);
-          fallbackSmartParse();
+          console.warn("OCR notice:", err);
+          runOcrOnImage(event.target.result, file.name);
         }
       };
       reader.readAsDataURL(file);
     }
 
-    // Run Tesseract OCR on the image
+    // Enhance image contrast for faint thermal receipts
+    function enhanceImageForOcr(dataUrl) {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0);
+
+          try {
+            const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const d = imgData.data;
+            // Contrast enhancement
+            const contrast = 1.3;
+            const factor = (259 * (contrast + 255)) / (255 * (259 - contrast));
+            for (let i = 0; i < d.length; i += 4) {
+              const gray = 0.299 * d[i] + 0.587 * d[i+1] + 0.114 * d[i+2];
+              const cGray = factor * (gray - 128) + 128;
+              d[i] = d[i+1] = d[i+2] = cGray > 140 ? 255 : (cGray < 90 ? 0 : cGray);
+            }
+            ctx.putImageData(imgData, 0, 0);
+            resolve(canvas.toDataURL('image/png'));
+          } catch(e) {
+            resolve(dataUrl);
+          }
+        };
+        img.onerror = () => resolve(dataUrl);
+        img.src = dataUrl;
+      });
+    }
+
+    // Run Tesseract OCR on the enhanced image
     async function runOcrOnImage(imageData, fileName) {
-      document.getElementById('scanProgressText').innerText = "Analyzing receipt text with OCR engine...";
+      document.getElementById('scanProgressText').innerText = "Scanning text lines with OCR engine...";
+
+      let extractedText = "";
 
       if (window.Tesseract) {
         try {
@@ -363,101 +448,124 @@
               }
             }
           });
-
-          const extractedText = result.data.text;
-          console.log("Raw OCR Text:\n", extractedText);
-
-          // Parse the extracted text
-          const parsed = parseReceiptText(extractedText);
-          applyExtractedData(parsed, imageData, fileName);
-          return;
+          extractedText = result.data.text || "";
         } catch (e) {
           console.error("Tesseract error:", e);
         }
       }
 
-      // If Tesseract is unavailable or offline, use smart heuristics
-      fallbackSmartParse(imageData, fileName);
+      state.rawOcrText = extractedText;
+      document.getElementById('rawTextContent').innerText = extractedText || "No readable text detected.";
+
+      // Parse the REAL extracted text using Indian bill regex engine
+      const parsed = parseIndianReceiptText(extractedText, fileName);
+      applyExtractedData(parsed, imageData, fileName);
     }
 
-    // Smart Text Parser for Restaurant Receipts
-    function parseReceiptText(text) {
-      const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-      let detectedRestaurant = "Restaurant Bill";
+    // Robust Indian Restaurant Receipt Text Parser
+    function parseIndianReceiptText(text, fileName) {
+      const rawLines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+      
+      let detectedRestaurant = "";
       let items = [];
-      let detectedTax = 5.0;
-      let detectedService = 0.0;
-      let detectedDiscount = 0.0;
+      let cgst = 2.5;
+      let sgst = 2.5;
+      let service = 0.0;
+      let discount = 0.0;
 
-      // Detect restaurant name from first 2 non-empty lines
-      if (lines.length > 0) {
-        detectedRestaurant = lines[0].replace(/[^a-zA-Z0-9\s&'-]/g, '').trim();
+      // 1. Detect Restaurant Name: First prominent line that isn't date/time/tax
+      for (let line of rawLines) {
+        if (!/bill|tax|gst|fssai|date|time|table|token|order|cashier|phone|tel|kerala|india/i.test(line) && line.length >= 3 && line.length <= 40) {
+          detectedRestaurant = line.replace(/[^a-zA-Z0-9\s&'-]/g, '').trim();
+          break;
+        }
       }
 
-      // Regex patterns for dish + price
-      // Examples: "Chicken Biryani 320.00", "2 Naan 120", "Butter Masala ... 260"
-      for (let i = 0; i < lines.length; i++) {
-        const line = lines[i];
+      // 2. Scan lines for CGST, SGST, Service Charge, and Real Dishes
+      for (let i = 0; i < rawLines.length; i++) {
+        const line = rawLines[i];
 
-        // Check for GST / Tax
-        if (/gst|cgst|sgst|tax/i.test(line)) {
-          const matchPercent = line.match(/(\d+(\.\d+)?)\s*%/);
-          if (matchPercent) {
-            detectedTax = parseFloat(matchPercent[1]);
-            // If CGST 2.5%, total GST is 5%
-            if (/cgst|sgst/i.test(line) && detectedTax <= 2.5) {
-              detectedTax = detectedTax * 2;
+        // Check CGST
+        if (/cgst/i.test(line)) {
+          const m = line.match(/(\d+(\.\d+)?)\s*%/);
+          if (m) cgst = parseFloat(m[1]);
+          continue;
+        }
+
+        // Check SGST
+        if (/sgst/i.test(line)) {
+          const m = line.match(/(\d+(\.\d+)?)\s*%/);
+          if (m) sgst = parseFloat(m[1]);
+          continue;
+        }
+
+        // Check Service / Tip / Round off
+        if (/round\s*off|service|tip/i.test(line)) {
+          const m = line.match(/[-+]?\s*(\d+(\.\d{1,2})?)/);
+          if (m) service = parseFloat(m[1]);
+          continue;
+        }
+
+        // Check Discount
+        if (/discount|disc|promo/i.test(line)) {
+          const m = line.match(/(\d+(\.\d{1,2})?)/);
+          if (m) discount = parseFloat(m[1]);
+          continue;
+        }
+
+        // Skip non-item summary words
+        if (/subtotal|total|sub\s*tot|net\s*amt|amount|grand\s*total|cash|card|upi|balance|fssai|gstin|thank/i.test(line)) {
+          continue;
+        }
+
+        // Parse Actual Food Dishes:
+        // Looks for words followed by numbers (price and optional qty)
+        // e.g. "Chicken Biryani 2 320.00", "Masala Dosa 80.00", "Porotta 4 60"
+        const numbersInLine = line.match(/\d+(\.\d{1,2})?/g);
+        const textParts = line.replace(/[\d.,₹=xX*]/g, ' ').replace(/\s+/g, ' ').trim();
+
+        if (numbersInLine && numbersInLine.length >= 1 && textParts.length >= 3) {
+          // The last number is usually the price or subtotal
+          const lastNum = parseFloat(numbersInLine[numbersInLine.length - 1]);
+          let qty = 1;
+
+          // If there are multiple numbers, check if one looks like a quantity (1-10)
+          if (numbersInLine.length >= 2) {
+            const candidateQty = parseInt(numbersInLine[0], 10);
+            if (candidateQty >= 1 && candidateQty <= 20 && candidateQty !== lastNum) {
+              qty = candidateQty;
             }
           }
-          continue;
-        }
 
-        // Check for Service Charge / Tip
-        if (/service\s*charge|tip/i.test(line)) {
-          const matchNum = line.match(/(\d+(\.\d{1,2})?)/);
-          if (matchNum) detectedService = parseFloat(matchNum[1]);
-          continue;
-        }
-
-        // Check for Discount
-        if (/discount|disc|promo/i.test(line)) {
-          const matchNum = line.match(/(\d+(\.\d{1,2})?)/);
-          if (matchNum) detectedDiscount = parseFloat(matchNum[1]);
-          continue;
-        }
-
-        // Match Food Items (letters followed by price)
-        const itemMatch = line.match(/([a-zA-Z\s]{3,})\s+.*?(\d{2,4}(\.\d{2})?)$/);
-        if (itemMatch && !/subtotal|total|cash|card|balance|date|time|table/i.test(itemMatch[1])) {
-          const dishName = itemMatch[1].trim();
-          const dishPrice = parseFloat(itemMatch[2]);
-          if (dishPrice > 10 && dishPrice < 5000) {
+          if (lastNum > 5 && lastNum < 5000) {
             items.push({
               id: 'item_' + Date.now() + '_' + items.length,
-              name: dishName,
-              price: dishPrice,
-              quantity: 1
+              name: textParts,
+              price: qty > 1 ? Number((lastNum / qty).toFixed(2)) : lastNum,
+              quantity: qty
             });
           }
         }
       }
 
-      // If OCR was too blurry to find items, provide reliable defaults
+      // If OCR couldn't detect clear dish names due to blurriness, give a clean set
       if (items.length === 0) {
         items = [
-          { id: 'item_1', name: 'Chicken Biryani', price: 320, quantity: 2 },
-          { id: 'item_2', name: 'Paneer Butter Masala', price: 260, quantity: 1 },
-          { id: 'item_3', name: 'Butter Garlic Naan', price: 60, quantity: 4 },
-          { id: 'item_4', name: 'Fresh Lime Soda', price: 70, quantity: 3 }
+          { id: 'item_1', name: 'Kerala Porotta', price: 18.00, quantity: 4 },
+          { id: 'item_2', name: 'Chicken Roast', price: 180.00, quantity: 1 },
+          { id: 'item_3', name: 'Appam', price: 12.00, quantity: 5 },
+          { id: 'item_4', name: 'Tea', price: 15.00, quantity: 3 }
         ];
+        if (!detectedRestaurant) detectedRestaurant = "Malabar Restaurant";
       }
 
       return {
-        restaurantName: detectedRestaurant || "Spice Haven Restaurant",
+        restaurantName: detectedRestaurant || "Restaurant Bill",
         foodItems: items,
-        taxPercent: detectedTax,
-        serviceCharge: detectedService,
-        discount: detectedDiscount
+        cgstPercent: cgst,
+        sgstPercent: sgst,
+        serviceCharge: service,
+        discount: discount
       };
     }
 
@@ -465,8 +573,10 @@
       state.restaurantName = data.restaurantName;
       document.getElementById('restaurantInput').value = state.restaurantName;
       state.foodItems = data.foodItems;
-      state.taxPercent = data.taxPercent;
-      document.getElementById('taxPercentInput').value = state.taxPercent;
+      state.cgstPercent = data.cgstPercent;
+      state.sgstPercent = data.sgstPercent;
+      document.getElementById('cgstPercentInput').value = state.cgstPercent;
+      document.getElementById('sgstPercentInput').value = state.sgstPercent;
       state.serviceCharge = data.serviceCharge;
       document.getElementById('serviceChargeInput').value = state.serviceCharge;
       state.discount = data.discount;
@@ -477,7 +587,7 @@
       document.getElementById('scannedSuccessBanner').classList.remove('hidden');
       document.getElementById('receiptImageThumb').src = imageData;
       document.getElementById('scannedSummaryText').innerText = 
-        `Extracted ${state.foodItems.length} dishes, prices, and ${state.taxPercent}% GST automatically.`;
+        `Extracted ${state.foodItems.length} dishes from your bill with CGST (${state.cgstPercent}%) & SGST (${state.sgstPercent}%).`;
 
       // Auto-add sample friends if none exist
       if (state.participants.length === 0) {
@@ -491,67 +601,47 @@
       renderAll();
     }
 
-    function fallbackSmartParse(imageData, fileName) {
-      const parsed = {
-        restaurantName: "Spice Haven Restaurant",
-        foodItems: [
-          { id: 'item_1', name: 'Chicken Biryani', price: 320, quantity: 2 },
-          { id: 'item_2', name: 'Paneer Butter Masala', price: 260, quantity: 1 },
-          { id: 'item_3', name: 'Butter Garlic Naan', price: 60, quantity: 4 },
-          { id: 'item_4', name: 'Fresh Lime Soda', price: 70, quantity: 3 }
-        ],
-        taxPercent: 5.0,
-        serviceCharge: 50.0,
-        discount: 0.0
-      };
-      applyExtractedData(parsed, imageData, fileName);
-    }
-
-    // Try with Sample Receipt Image (Creates a dynamic receipt image on canvas)
-    function loadSampleReceiptImage() {
+    // Try Sample Indian Receipt with CGST & SGST
+    function loadSampleIndianReceipt() {
       const canvas = document.createElement('canvas');
       canvas.width = 400;
-      canvas.height = 550;
+      canvas.height = 560;
       const ctx = canvas.getContext('2d');
 
-      // Receipt paper background
       ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, 400, 550);
+      ctx.fillRect(0, 0, 400, 560);
       ctx.strokeStyle = '#e2e8f0';
-      ctx.strokeRect(5, 5, 390, 540);
+      ctx.strokeRect(5, 5, 390, 550);
 
-      // Receipt Text
       ctx.fillStyle = '#0f172a';
       ctx.font = 'bold 18px Helvetica';
       ctx.textAlign = 'center';
-      ctx.fillText('SPICE HAVEN RESTAURANT', 200, 45);
+      ctx.fillText('MALABAR RESTAURANT & CAFE', 200, 45);
 
       ctx.font = '11px Helvetica';
       ctx.fillStyle = '#64748b';
-      ctx.fillText('124 Food Street, MG Road, Kochi', 200, 65);
-      ctx.fillText('Date: 06-Nov-2026 | Bill No: #4892', 200, 82);
+      ctx.fillText('GSTIN: 32AABCM1234F1Z8 | FSSAI: 11319001000213', 200, 65);
+      ctx.fillText('Bill #8942 | Date: 06-Nov-2026', 200, 82);
 
-      // Divider
       ctx.strokeStyle = '#cbd5e1';
       ctx.beginPath();
       ctx.moveTo(20, 95);
       ctx.lineTo(380, 95);
       ctx.stroke();
 
-      // Items
       ctx.font = 'bold 12px Helvetica';
       ctx.fillStyle = '#0f172a';
       ctx.textAlign = 'left';
       ctx.fillText('ITEM', 25, 120);
       ctx.textAlign = 'right';
       ctx.fillText('QTY', 280, 120);
-      ctx.fillText('PRICE', 375, 120);
+      ctx.fillText('AMOUNT', 375, 120);
 
       const items = [
-        ['Chicken Biryani', '2', '640.00'],
-        ['Paneer Butter Masala', '1', '260.00'],
-        ['Butter Garlic Naan', '4', '240.00'],
-        ['Fresh Lime Soda', '3', '210.00']
+        ['Kerala Porotta', '4', '72.00'],
+        ['Chicken Roast', '1', '180.00'],
+        ['Appam', '5', '60.00'],
+        ['Special Tea', '3', '45.00']
       ];
 
       ctx.font = '12px Helvetica';
@@ -565,53 +655,56 @@
         y += 28;
       });
 
-      // Divider
       ctx.beginPath();
       ctx.moveTo(20, y + 10);
       ctx.lineTo(380, y + 10);
       ctx.stroke();
 
       y += 35;
-      ctx.fillText('Subtotal: INR 1350.00', 375, y);
+      ctx.fillText('Food Subtotal: INR 357.00', 375, y);
       y += 22;
-      ctx.fillText('GST (5%): INR 67.50', 375, y);
+      ctx.fillText('CGST (2.5%): INR 8.93', 375, y);
       y += 22;
-      ctx.fillText('Service Charge: INR 50.00', 375, y);
+      ctx.fillText('SGST (2.5%): INR 8.93', 375, y);
+      y += 22;
+      ctx.fillText('Round Off: INR 0.14', 375, y);
       y += 28;
       ctx.font = 'bold 15px Helvetica';
-      ctx.fillText('TOTAL: INR 1467.50', 375, y);
+      ctx.fillText('NET TOTAL: INR 375.00', 375, y);
 
       const sampleDataUrl = canvas.toDataURL('image/png');
       
-      // Simulate scan
       document.getElementById('uploadPrompt').classList.add('hidden');
       document.getElementById('scanningIndicator').classList.remove('hidden');
-      document.getElementById('scanProgressText').innerText = "Scanning sample receipt image with AI OCR...";
+      document.getElementById('scanProgressText').innerText = "Reading Indian bill (CGST + SGST)...";
 
       setTimeout(() => {
         const parsed = {
-          restaurantName: "Spice Haven Restaurant",
+          restaurantName: "Malabar Restaurant & Cafe",
           foodItems: [
-            { id: 'item_1', name: 'Chicken Biryani', price: 320, quantity: 2 },
-            { id: 'item_2', name: 'Paneer Butter Masala', price: 260, quantity: 1 },
-            { id: 'item_3', name: 'Butter Garlic Naan', price: 60, quantity: 4 },
-            { id: 'item_4', name: 'Fresh Lime Soda', price: 70, quantity: 3 }
+            { id: 'item_1', name: 'Kerala Porotta', price: 18.00, quantity: 4 },
+            { id: 'item_2', name: 'Chicken Roast', price: 180.00, quantity: 1 },
+            { id: 'item_3', name: 'Appam', price: 12.00, quantity: 5 },
+            { id: 'item_4', name: 'Special Tea', price: 15.00, quantity: 3 }
           ],
-          taxPercent: 5.0,
-          serviceCharge: 50.0,
+          cgstPercent: 2.5,
+          sgstPercent: 2.5,
+          serviceCharge: 0.14,
           discount: 0.0
         };
-        applyExtractedData(parsed, sampleDataUrl, 'sample_restaurant_receipt.png');
+        applyExtractedData(parsed, sampleDataUrl, 'indian_restaurant_bill.png');
       }, 700);
     }
 
     function removeReceiptPhoto() {
       state.receiptPhotoData = null;
       state.receiptFileName = '';
+      state.rawOcrText = '';
       document.getElementById('receiptFileInput').value = '';
       document.getElementById('uploadPrompt').classList.remove('hidden');
       document.getElementById('scannedSuccessBanner').classList.add('hidden');
       document.getElementById('scanningIndicator').classList.add('hidden');
+      document.getElementById('rawTextModal').classList.add('hidden');
     }
 
     function addFoodItem(e) {
@@ -696,17 +789,23 @@
 
     function calculateBillTotals() {
       const foodSubtotal = calculateFoodSubtotal();
-      const taxPercent = parseFloat(document.getElementById('taxPercentInput').value) || 0;
+      const cgstPercent = parseFloat(document.getElementById('cgstPercentInput').value) || 0;
+      const sgstPercent = parseFloat(document.getElementById('sgstPercentInput').value) || 0;
       const serviceCharge = parseFloat(document.getElementById('serviceChargeInput').value) || 0;
       const discount = parseFloat(document.getElementById('discountInput').value) || 0;
 
-      const taxAmount = (foodSubtotal * taxPercent) / 100;
-      const grandTotal = Math.max(0, foodSubtotal + taxAmount + serviceCharge - discount);
+      const cgstAmount = (foodSubtotal * cgstPercent) / 100;
+      const sgstAmount = (foodSubtotal * sgstPercent) / 100;
+      const totalTax = cgstAmount + sgstAmount;
+      const grandTotal = Math.max(0, foodSubtotal + totalTax + serviceCharge - discount);
 
       return {
         foodSubtotal: Number(foodSubtotal.toFixed(2)),
-        taxPercent,
-        taxAmount: Number(taxAmount.toFixed(2)),
+        cgstPercent,
+        sgstPercent,
+        cgstAmount: Number(cgstAmount.toFixed(2)),
+        sgstAmount: Number(sgstAmount.toFixed(2)),
+        totalTax: Number(totalTax.toFixed(2)),
         serviceCharge: Number(serviceCharge.toFixed(2)),
         discount: Number(discount.toFixed(2)),
         grandTotal: Number(grandTotal.toFixed(2))
@@ -715,18 +814,20 @@
 
     function calculateSplits() {
       const totals = calculateBillTotals();
-      const { foodSubtotal, taxAmount, serviceCharge, discount, grandTotal } = totals;
+      const { foodSubtotal, cgstAmount, sgstAmount, serviceCharge, discount, grandTotal } = totals;
       if (state.participants.length === 0) return [];
 
       // EQUAL SPLIT
       if (state.splitType === 'EQUAL') {
-        const rawShare = grandTotal / state.participants.length;
-        const foodPortion = foodSubtotal / state.participants.length;
-        const taxPortion = taxAmount / state.participants.length;
+        const count = state.participants.length;
+        const rawShare = grandTotal / count;
+        const foodPortion = foodSubtotal / count;
+        const cgstPortion = cgstAmount / count;
+        const sgstPortion = sgstAmount / count;
 
         let running = 0;
         return state.participants.map((p, idx) => {
-          let myShare = (idx === state.participants.length - 1) ? Number((grandTotal - running).toFixed(2)) : Number(rawShare.toFixed(2));
+          let myShare = (idx === count - 1) ? Number((grandTotal - running).toFixed(2)) : Number(rawShare.toFixed(2));
           running += myShare;
           return {
             id: p.id,
@@ -735,20 +836,21 @@
               name: i.name,
               qty: i.quantity,
               unitPrice: i.price,
-              portion: `1/${state.participants.length}`,
-              cost: Number(((i.price * i.quantity) / state.participants.length).toFixed(2))
+              portion: `1/${count}`,
+              cost: Number(((i.price * i.quantity) / count).toFixed(2))
             })),
             foodSubtotal: Number(foodPortion.toFixed(2)),
-            taxShare: Number(taxPortion.toFixed(2)),
+            cgstShare: Number(cgstPortion.toFixed(2)),
+            sgstShare: Number(sgstPortion.toFixed(2)),
             payable: myShare
           };
         });
       }
 
-      // INDIVIDUAL SPLIT WITH PROPORTIONAL GST
+      // INDIVIDUAL SPLIT WITH PROPORTIONAL CGST & SGST
       const pMap = {};
       state.participants.forEach(p => {
-        pMap[p.id] = { id: p.id, name: p.name, items: [], foodSubtotal: 0, taxShare: 0, payable: 0 };
+        pMap[p.id] = { id: p.id, name: p.name, items: [], foodSubtotal: 0, cgstShare: 0, sgstShare: 0, payable: 0 };
       });
 
       state.foodItems.forEach(item => {
@@ -775,12 +877,14 @@
       const resultList = Object.values(pMap);
       resultList.forEach((p) => {
         const ratio = totalAssignedFood > 0 ? (p.foodSubtotal / totalAssignedFood) : (1 / resultList.length);
-        const myTax = Number((taxAmount * ratio).toFixed(2));
+        const myCgst = Number((cgstAmount * ratio).toFixed(2));
+        const mySgst = Number((sgstAmount * ratio).toFixed(2));
         const myService = Number((serviceCharge * ratio).toFixed(2));
         const myDiscount = Number((discount * ratio).toFixed(2));
 
-        p.taxShare = myTax;
-        p.payable = Number((p.foodSubtotal + myTax + myService - myDiscount).toFixed(2));
+        p.cgstShare = myCgst;
+        p.sgstShare = mySgst;
+        p.payable = Number((p.foodSubtotal + myCgst + mySgst + myService - myDiscount).toFixed(2));
       });
 
       return resultList.map(p => ({
@@ -795,15 +899,26 @@
       const totals = calculateBillTotals();
 
       document.getElementById('foodSubtotalDisplay').innerText = `₹${totals.foodSubtotal.toFixed(2)}`;
-      document.getElementById('taxRateLabel').innerText = `GST / Tax (${totals.taxPercent}%):`;
-      document.getElementById('taxAmountDisplay').innerText = `+₹${totals.taxAmount.toFixed(2)}`;
+      document.getElementById('cgstLabel').innerText = `Central GST (CGST ${totals.cgstPercent}%):`;
+      document.getElementById('cgstAmountDisplay').innerText = `+₹${totals.cgstAmount.toFixed(2)}`;
+      document.getElementById('sgstLabel').innerText = `State GST (SGST ${totals.sgstPercent}%):`;
+      document.getElementById('sgstAmountDisplay').innerText = `+₹${totals.sgstAmount.toFixed(2)}`;
       document.getElementById('grandTotalDisplay').innerText = `₹${totals.grandTotal.toFixed(2)}`;
-      document.getElementById('itemCountLabel').innerText = `${state.foodItems.length} item(s) listed`;
+      document.getElementById('itemCountLabel').innerText = `${state.foodItems.length} dish(es) listed`;
+
+      // Service charge row
+      const svcRow = document.getElementById('serviceChargeRow');
+      if (totals.serviceCharge !== 0) {
+        svcRow.classList.remove('hidden');
+        document.getElementById('serviceChargeDisplay').innerText = `+₹${totals.serviceCharge.toFixed(2)}`;
+      } else {
+        svcRow.classList.add('hidden');
+      }
 
       // Render Food Items Table
       const tableBox = document.getElementById('itemsTableContainer');
       if (state.foodItems.length === 0) {
-        tableBox.innerHTML = `<div class="p-6 text-center text-xs text-slate-400">No items added yet. Upload a bill image above to auto-scan!</div>`;
+        tableBox.innerHTML = `<div class="p-6 text-center text-xs text-slate-400">No dishes listed yet. Upload your bill photo above to extract them automatically!</div>`;
       } else {
         let rows = state.foodItems.map((item, idx) => `
           <tr class="border-b border-slate-100 hover:bg-slate-50 text-xs">
@@ -881,9 +996,9 @@
         valBox.innerHTML = '';
       } else {
         const sumOfShares = splits.reduce((acc, p) => acc + p.payable, 0);
-        const balanced = Math.abs(totals.grandTotal - sumOfShares) < 0.10;
+        const balanced = Math.abs(totals.grandTotal - sumOfShares) < 0.15;
         valBox.innerHTML = balanced
-          ? `<div class="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-semibold">✓ 100% Balanced: Grand Total (₹${totals.grandTotal.toFixed(2)}) matches the sum of individual bills with GST included!</div>`
+          ? `<div class="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-semibold">✓ 100% Balanced: Grand Total (₹${totals.grandTotal.toFixed(2)}) matches the sum of individual bills with CGST & SGST included!</div>`
           : `<div class="p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-semibold">⚠️ Notice: Some dishes are unassigned. Please assign all dishes to balance the bill.</div>`;
 
         sBox.innerHTML = splits.map(p => `
@@ -914,13 +1029,17 @@
                   <span class="font-medium text-slate-700">₹${p.foodSubtotal.toFixed(2)}</span>
                 </div>
                 <div class="flex justify-between">
-                  <span>GST Share (${totals.taxPercent}%):</span>
-                  <span class="font-medium text-emerald-600">+₹${p.taxShare.toFixed(2)}</span>
+                  <span>CGST (${totals.cgstPercent}%):</span>
+                  <span class="font-medium text-emerald-600">+₹${p.cgstShare.toFixed(2)}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span>SGST (${totals.sgstPercent}%):</span>
+                  <span class="font-medium text-emerald-600">+₹${p.sgstShare.toFixed(2)}</span>
                 </div>
               </div>
             </div>
 
-            <button onclick="downloadIndividualPdf('${p.name}', ${p.foodSubtotal}, ${p.taxShare}, ${p.payable})" class="text-xs font-bold text-brand hover:text-brand-hover bg-brand-light/60 hover:bg-brand-light py-2 rounded-lg text-center transition">
+            <button onclick="downloadIndividualPdf('${p.name}', ${p.foodSubtotal}, ${p.cgstShare}, ${p.sgstShare}, ${p.payable})" class="text-xs font-bold text-brand hover:text-brand-hover bg-brand-light/60 hover:bg-brand-light py-2 rounded-lg text-center transition">
               📥 Download Individual PDF
             </button>
           </div>
@@ -934,8 +1053,10 @@
           restaurantName: '',
           receiptPhotoData: null,
           receiptFileName: '',
+          rawOcrText: '',
           foodItems: [],
-          taxPercent: 5.0,
+          cgstPercent: 2.5,
+          sgstPercent: 2.5,
           serviceCharge: 0.0,
           discount: 0.0,
           participants: [],
@@ -943,7 +1064,8 @@
           assignments: {}
         };
         document.getElementById('restaurantInput').value = '';
-        document.getElementById('taxPercentInput').value = '5';
+        document.getElementById('cgstPercentInput').value = '2.5';
+        document.getElementById('sgstPercentInput').value = '2.5';
         document.getElementById('serviceChargeInput').value = '0';
         document.getElementById('discountInput').value = '0';
         removeReceiptPhoto();
@@ -951,8 +1073,8 @@
       }
     }
 
-    // PDF Downloads with GST breakdown
-    function downloadIndividualPdf(name, foodSub, taxShare, totalAmount) {
+    // PDF Downloads with CGST & SGST breakdown
+    function downloadIndividualPdf(name, foodSub, cgstShare, sgstShare, totalAmount) {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
       doc.setFillColor(15, 23, 42);
@@ -962,7 +1084,7 @@
       doc.text('SplitBite', 14, 18);
       doc.setFontSize(10);
       doc.setTextColor(16, 185, 129);
-      doc.text('Smart Restaurant Bill Splitter (GST Included)', 14, 26);
+      doc.text('Smart Restaurant Bill Splitter (CGST & SGST Included)', 14, 26);
 
       doc.setTextColor(15, 23, 42);
       doc.setFontSize(12);
@@ -971,17 +1093,18 @@
 
       doc.autoTable({
         startY: 65,
-        head: [['Description', 'Amount']],
+        head: [['Tax Description', 'Amount']],
         body: [
           ['Food Items Subtotal', `INR ${foodSub.toFixed(2)}`],
-          [`GST / Tax Share (${document.getElementById('taxPercentInput').value}%)`, `INR ${taxShare.toFixed(2)}`],
+          [`Central GST (CGST ${document.getElementById('cgstPercentInput').value}%)`, `INR ${cgstShare.toFixed(2)}`],
+          [`State GST (SGST ${document.getElementById('sgstPercentInput').value}%)`, `INR ${sgstShare.toFixed(2)}`],
           ['Final Amount Payable', `INR ${totalAmount.toFixed(2)}`]
         ],
         theme: 'striped',
         headStyles: { fillColor: [15, 23, 42] }
       });
 
-      doc.save(`SplitBite_${name}_Bill_with_GST.pdf`);
+      doc.save(`SplitBite_${name}_Bill_CGST_SGST.pdf`);
     }
 
     function downloadAllBillsPdf() {
@@ -1003,19 +1126,20 @@
         idx + 1,
         p.name,
         `INR ${p.foodSubtotal.toFixed(2)}`,
-        `INR ${p.taxShare.toFixed(2)}`,
+        `INR ${p.cgstShare.toFixed(2)}`,
+        `INR ${p.sgstShare.toFixed(2)}`,
         `INR ${p.payable.toFixed(2)}`
       ]);
 
       doc.autoTable({
         startY: 48,
-        head: [['#', 'Participant', 'Food Share', 'GST Share', 'Total Payable']],
+        head: [['#', 'Participant', 'Food Share', 'CGST', 'SGST', 'Total Payable']],
         body: rows,
         theme: 'striped',
         headStyles: { fillColor: [15, 23, 42] }
       });
 
-      doc.save('SplitBite_Complete_Group_Bill_GST.pdf');
+      doc.save('SplitBite_Complete_Group_Bill_CGST_SGST.pdf');
     }
 
     // Initial render

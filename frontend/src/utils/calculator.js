@@ -1,9 +1,9 @@
 /**
- * SplitBite Bill Calculation Utility with GST & Taxes
+ * SplitBite Bill Calculation Utility with Indian CGST & SGST
  * 
  * Handles:
  * 1. Food Subtotal calculation
- * 2. GST / Tax calculation (% or fixed)
+ * 2. CGST (2.5%) & SGST (2.5%) calculation
  * 3. Service Charge & Discount handling
  * 4. Proportional distribution of taxes based on food consumption
  * 5. Penny-accurate rounding guarantee
@@ -19,18 +19,24 @@ export function calculateFoodSubtotal(foodItems = []) {
 
 export function calculateBillTotals({
   foodItems = [],
-  taxPercent = 5.0,
+  cgstPercent = 2.5,
+  sgstPercent = 2.5,
   serviceCharge = 0.0,
   discount = 0.0
 }) {
   const foodSubtotal = calculateFoodSubtotal(foodItems);
-  const taxAmount = (foodSubtotal * (parseFloat(taxPercent) || 0)) / 100;
-  const grandTotal = Math.max(0, foodSubtotal + taxAmount + (parseFloat(serviceCharge) || 0) - (parseFloat(discount) || 0));
+  const cgstAmount = (foodSubtotal * (parseFloat(cgstPercent) || 0)) / 100;
+  const sgstAmount = (foodSubtotal * (parseFloat(sgstPercent) || 0)) / 100;
+  const totalTax = cgstAmount + sgstAmount;
+  const grandTotal = Math.max(0, foodSubtotal + totalTax + (parseFloat(serviceCharge) || 0) - (parseFloat(discount) || 0));
 
   return {
     foodSubtotal: Number(foodSubtotal.toFixed(2)),
-    taxPercent: parseFloat(taxPercent) || 0,
-    taxAmount: Number(taxAmount.toFixed(2)),
+    cgstPercent: parseFloat(cgstPercent) || 0,
+    sgstPercent: parseFloat(sgstPercent) || 0,
+    cgstAmount: Number(cgstAmount.toFixed(2)),
+    sgstAmount: Number(sgstAmount.toFixed(2)),
+    totalTax: Number(totalTax.toFixed(2)),
     serviceCharge: Number((parseFloat(serviceCharge) || 0).toFixed(2)),
     discount: Number((parseFloat(discount) || 0).toFixed(2)),
     grandTotal: Number(grandTotal.toFixed(2))
@@ -40,15 +46,16 @@ export function calculateBillTotals({
 export function calculateSplits({
   restaurantName = '',
   foodItems = [],
-  taxPercent = 5.0,
+  cgstPercent = 2.5,
+  sgstPercent = 2.5,
   serviceCharge = 0.0,
   discount = 0.0,
   participants = [],
-  splitType = 'EQUAL', // 'EQUAL' or 'INDIVIDUAL'
-  assignments = {}     // itemId -> array of participantIds
+  splitType = 'EQUAL',
+  assignments = {}
 }) {
-  const totals = calculateBillTotals({ foodItems, taxPercent, serviceCharge, discount });
-  const { foodSubtotal, taxAmount, grandTotal } = totals;
+  const totals = calculateBillTotals({ foodItems, cgstPercent, sgstPercent, serviceCharge, discount });
+  const { foodSubtotal, cgstAmount, sgstAmount, grandTotal } = totals;
 
   if (!participants || participants.length === 0) {
     return {
@@ -65,9 +72,8 @@ export function calculateSplits({
     const count = participants.length;
     const rawShare = grandTotal / count;
     const foodPortion = foodSubtotal / count;
-    const taxPortion = taxAmount / count;
-    const svcPortion = totals.serviceCharge / count;
-    const discPortion = totals.discount / count;
+    const cgstPortion = cgstAmount / count;
+    const sgstPortion = sgstAmount / count;
 
     let runningTotal = 0;
 
@@ -92,9 +98,8 @@ export function calculateSplits({
           itemCostForParticipant: Number((((parseFloat(item.price) || 0) * (parseInt(item.quantity, 10) || 1)) / count).toFixed(2))
         })),
         foodSubtotal: Number(foodPortion.toFixed(2)),
-        taxShare: Number(taxPortion.toFixed(2)),
-        serviceShare: Number(svcPortion.toFixed(2)),
-        discountShare: Number(discPortion.toFixed(2)),
+        cgstShare: Number(cgstPortion.toFixed(2)),
+        sgstShare: Number(sgstPortion.toFixed(2)),
         subtotal: Number(foodPortion.toFixed(2)),
         finalPayable: myShare
       };
@@ -109,7 +114,7 @@ export function calculateSplits({
     };
   }
 
-  // 2. INDIVIDUAL FOOD ASSIGNMENT WITH PROPORTIONAL TAX DISTRIBUTION
+  // 2. INDIVIDUAL SPLIT WITH PROPORTIONAL CGST & SGST
   const participantMap = {};
   participants.forEach(p => {
     participantMap[p.id] = {
@@ -117,9 +122,8 @@ export function calculateSplits({
       participantName: p.name,
       assignedItems: [],
       foodSubtotal: 0,
-      taxShare: 0,
-      serviceShare: 0,
-      discountShare: 0,
+      cgstShare: 0,
+      sgstShare: 0,
       subtotal: 0,
       finalPayable: 0
     };
@@ -157,24 +161,22 @@ export function calculateSplits({
     });
   });
 
-  // Calculate total food consumed by all participants
   const totalAssignedFood = Object.values(participantMap).reduce((sum, p) => sum + p.foodSubtotal, 0);
 
-  // Proportional GST and charges distribution
   const participantBills = Object.values(participantMap).map(p => {
     const ratio = totalAssignedFood > 0 ? (p.foodSubtotal / totalAssignedFood) : (1 / participants.length);
-    const myTax = Number((taxAmount * ratio).toFixed(2));
-    const myService = Number((totals.serviceCharge * ratio).toFixed(2));
-    const myDiscount = Number((totals.discount * ratio).toFixed(2));
+    const myCgst = Number((cgstAmount * ratio).toFixed(2));
+    const mySgst = Number((sgstAmount * ratio).toFixed(2));
+    const myService = Number(((totals.serviceCharge) * ratio).toFixed(2));
+    const myDiscount = Number(((totals.discount) * ratio).toFixed(2));
 
-    const finalPayable = Number((p.foodSubtotal + myTax + myService - myDiscount).toFixed(2));
+    const finalPayable = Number((p.foodSubtotal + myCgst + mySgst + myService - myDiscount).toFixed(2));
 
     return {
       ...p,
       foodSubtotal: Number(p.foodSubtotal.toFixed(2)),
-      taxShare: myTax,
-      serviceShare: myService,
-      discountShare: myDiscount,
+      cgstShare: myCgst,
+      sgstShare: mySgst,
       subtotal: Number(p.foodSubtotal.toFixed(2)),
       finalPayable
     };
