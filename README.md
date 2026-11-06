@@ -98,25 +98,4 @@ mvn spring-boot:run
 - API Health Check: `http://localhost:8080/api/bills/health`
 - Interactive Swagger Playground: `http://localhost:8080/swagger-ui/index.html`
 
----
 
-## 🎯 Key Interview Talking Points (How to explain this project)
-
-When presenting this in a **Java Full Stack Developer** interview, highlight these 4 architectural achievements:
-
-1. **Enterprise Security & JWT Architecture:**
-   > *"I implemented Spring Security 6 with stateless JWT authentication using JJWT 0.12.5. Passwords are encrypted using BCrypt, and a OncePerRequestFilter validates the Bearer token in the Authorization header before requests reach the controllers."*
-
-2. **Splitwise-Style Debt Settlement Ledger:**
-   > *"Rather than relying on mock payment simulations, I designed an authentic debt-simplification ledger. The system maps the net balances between debtor participants and the host creditor, with endpoints to record settlement via Cash, UPI, or Bank Transfer."*
-
-3. **Accurate Proportional Tax Mathematics (CGST & SGST):**
-   > *"Rather than dividing taxes equally, taxes are distributed proportionally based on each person's exact dish consumption ratio: $\text{Tax Share} = \text{Total GST} \times \left(\frac{\text{Person's Food Subtotal}}{\text{Total Food Subtotal}}\right)$. The algorithm guarantees that the sum of individual bills exactly matches the restaurant grand total with zero penny round-off errors."*
-
-4. **REST API Best Practices & Documentation:**
-   > *"The backend uses a clean Controller-Service-Repository architecture with `@RestControllerAdvice` for global exception handling and Bean Validation (`@Valid`). All REST endpoints are fully documented and testable via Swagger UI / OpenAPI 3.0."*
-
----
-
-## 📄 License
-This project is open-source and licensed under the **MIT License**.
